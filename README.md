@@ -7,4 +7,4 @@ This extension parses your project to enable IntelliSense for Razor pages within
 
 Currently this will only work for actions with a HttpGet attribute.
 
-![](https://github.com/schneiderpat/aspnet-helper/tree/dev/images/IntelliSenseDemo.gif)
+![](https://raw.githubusercontent.com/schneiderpat/aspnet-helper/dev/images/IntelliSenseDemo.gif)
