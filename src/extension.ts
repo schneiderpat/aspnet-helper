@@ -8,6 +8,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     let itemProvider = new ItemProvider(new HtmlParser());
     vscode.languages.registerCompletionItemProvider('html', itemProvider);
+    vscode.languages.registerCompletionItemProvider('razor', itemProvider);
 
 }
 
