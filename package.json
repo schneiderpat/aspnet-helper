@@ -2,7 +2,7 @@
     "name": "aspnet-helper",
     "displayName": "ASP.NET Helper",
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "schneiderpat",
     "repository": {
         "type": "git",

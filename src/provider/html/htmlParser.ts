@@ -1,48 +1,48 @@
 'use strict';
 
+import * as vscode from 'vscode';
 import DeclarationInfo from './declarationInfo';
-import ParsingResult from '../parsingResult';
 import IParser from '../iParser';
 
 export default class HtmlParser implements IParser {
 
     private _declarationInfo: DeclarationInfo;
 
-    public getParsingResult(input: string): ParsingResult {
+    public getParsingResults(input: string): vscode.CompletionList {
 
         this._declarationInfo = new DeclarationInfo();
 
-        let suggestions = this.getSuggestions(input);
+        let items = this.getItems(input);
         let userInput = this.getUserInput(input);
 
-        return new ParsingResult(suggestions);
+        return items;
 
     }
 
-    getSuggestions(input: string): string[] {
-        let suggestions: string[] = [];
+    getItems(input: string): vscode.CompletionList {
+        let suggestions = new vscode.CompletionList();
 
         let areas = this._declarationInfo.testForArea(input);
-        areas.forEach(a => { suggestions.push(a); });
+        suggestions.items = suggestions.items.concat(areas.items);
 
         let controllers = this._declarationInfo.testForController(input);
-        if (controllers.length > 0) {
-            suggestions = [];
-            controllers.forEach(c => { suggestions.push(c); });
+        if (controllers.items.length > 0) {
+            suggestions = new vscode.CompletionList();
+            suggestions.items = suggestions.items.concat(controllers.items);
         }
 
         let actions = this._declarationInfo.testForAction(input);
-        if (actions.length > 0)
+        if (actions.items.length > 0)
         {
-            suggestions = [];
-            actions.forEach(a => { suggestions.push(a); });
+            suggestions = new vscode.CompletionList();
+            suggestions.items = suggestions.items.concat(actions.items);
         }
 
         let routeParams = this._declarationInfo.testForRouteParams(input);
-        if (routeParams.length > 0)
+        if (routeParams.items.length > 0)
         {
-            suggestions = [];
-            routeParams.forEach(r => { suggestions.push(r); });
+            suggestions = new vscode.CompletionList();
+            suggestions.items = suggestions.items.concat(routeParams.items);
         }
 
         return suggestions;

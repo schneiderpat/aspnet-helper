@@ -5,34 +5,40 @@ import * as path from 'path';
 export default class DeclarationInfo {
     
     // Add areas
-    public testForArea(input: string): string[] {
+    public testForArea(input: string): vscode.CompletionList {
         let areaTest = /.*asp-area=".?/;
         if (!areaTest.test(input))
-            return [];
+            return new vscode.CompletionList();
 
-        return this.getDirectories();
+        let areas = new vscode.CompletionList();
+        let directories = this.getDirectories();
+        directories.forEach((d) => {
+            areas.items.push(new vscode.CompletionItem(d));
+        });
+        return areas;
     }
 
     private getDirectories(): string[] {
         let rootDir = vscode.workspace.rootPath + path.sep + 'Areas' + path.sep;
-        return fs.readdirSync(rootDir).filter((file) => {
+        let directories = fs.readdirSync(rootDir).filter((file) => {
             return fs.statSync(path.join(rootDir, file)).isDirectory();
         });
+        return directories;
     }
 
     // Add controllers
-    public testForController(input: string): string[] {
+    public testForController(input: string): vscode.CompletionList {
         let controllerTest = /.*asp-controller=".?/;
         if (!controllerTest.test(input))
-            return [];
+            return new vscode.CompletionList();
 
         let projectPath = vscode.workspace.rootPath;
         let pattern: string;
-        let area = this.getCurrentArea(input);
+        let area = this.getCurrentInput(input, this.areaRegExp);
         let files = this.getControllerFiles(area);
         
-        let controllers: string[] = [];
-        files.forEach((f) => { controllers.push(this.extractController(f)); });
+        let controllers = new vscode.CompletionList();
+        files.forEach((f) => { controllers.items.push(new vscode.CompletionItem(this.extractController(f))); });
 
         return controllers;
     }
@@ -57,26 +63,25 @@ export default class DeclarationInfo {
     }
 
     // Add actions
-    public testForAction(input: string): string[] {
+    public testForAction(input: string): vscode.CompletionList {
         let actionTest = /.*asp-action=".?/;
         if (!actionTest.test(input))
-            return [];
-
-        let pattern = this.getControllerPath(input);
+            return new vscode.CompletionList;
         
-        let actions: string[] = [];
+        let actions = new vscode.CompletionList;
 
-        let file = fs.readFileSync(pattern, 'utf8');
-
-        actions = this.getActionMethods(file);
+        let actionNames = this.getActionMethods(input);
+        actionNames.forEach((a) => {
+            actions.items.push(new vscode.CompletionItem(a));
+        });
 
         return actions;
     }
 
     private getControllerPath(input: string): string {
         let rootDir = vscode.workspace.rootPath;
-        let area = this.getCurrentArea(input);
-        let controller = this.getCurrentController(input);
+        let area = this.getCurrentInput(input, this.areaRegExp);
+        let controller = this.getCurrentInput(input, this.controllerRegExp);
         if (area !== '') {
             return rootDir + path.sep + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
         } else {
@@ -84,22 +89,24 @@ export default class DeclarationInfo {
         }
     }
 
-    private getActionMethods(file: string): string[] {
+    private getActionMethods(input: string): string[] {
+        let pattern = this.getControllerPath(input);
+        let file = fs.readFileSync(pattern, 'utf8');
         
         let actions: string[] = [];
 
-        let asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
-        let asyncActions = file.match(asyncActionsRegExp);
+        let asyncActions = file.match(this.asyncActionsRegExp);
         if (asyncActions) actions = actions.concat(this.extractActionNames(asyncActions));
 
-        let syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
-        let syncActions = file.match(syncActionsRegExp);
+        let syncActions = file.match(this.syncActionsRegExp);
         if (syncActions) actions = actions.concat(this.extractActionNames(syncActions));
 
         return actions;
 
     }
 
+    private asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
+    private syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
     private extractActionNames(actionMethods: RegExpMatchArray): string[]
     {
         let nameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
@@ -112,40 +119,43 @@ export default class DeclarationInfo {
     }
 
     // Add route params
-    public testForRouteParams(input: string): string[] {
+    public testForRouteParams(input: string): vscode.CompletionList {
         let routeParamsTest = /.*asp-route-.?/;
         if (!routeParamsTest.test(input))
-            return [];
+            return new vscode.CompletionList();
 
-        let pattern = this.getControllerPath(input);
-        let action = this.getCurrentAction(input);
-        let file = fs.readFileSync(pattern, 'utf8');
-        return this.getCurrentActionMethodRouteParams(file, action);
+        return this.getCurrentActionMethodRouteParams(input);
     }
 
-    private getCurrentActionMethodRouteParams(file: string, action: string): string[] {
-        let routeParams: string[] = [];
+    private getCurrentActionMethodRouteParams(input: string): vscode.CompletionList {
+        let pattern = this.getControllerPath(input);
+        let action = this.getCurrentInput(input, this.actionRegExp);
+        let file = fs.readFileSync(pattern, 'utf8');
+
+        let routeParams = new vscode.CompletionList();
         let nameRegExp = /.?\s[a-zA-Z]+\((.*)\)/;
 
         let asyncActionRegExp = new RegExp('\\[HttpGet\\]\r\n\\s*public\\sasync\\sTask<[a-zA-Z]+>\\s' + action + '\\(.*\\)', 'g');
         let asyncActions = file.match(asyncActionRegExp);
-        if (asyncActions) routeParams = routeParams.concat(this.extractRouteParams(asyncActions));
+        if (asyncActions) routeParams.items = routeParams.items.concat(this.extractRouteParams(asyncActions));
 
         let syncActionRegExp = new RegExp('\\[HttpGet\\]\r\n\\s*public\\s[a-zA-Z]+\\s' + action + '\\(.*\\)', 'g');
         let syncActions = file.match(syncActionRegExp);
-        if (syncActions) routeParams = routeParams.concat(this.extractRouteParams(syncActions));
+        if (syncActions) routeParams.items = routeParams.items.concat(this.extractRouteParams(syncActions));
 
         return routeParams;
     }
 
-    private extractRouteParams(actionMethods: RegExpMatchArray): string[] {
+    private extractRouteParams(actionMethods: RegExpMatchArray): vscode.CompletionItem[] {
         let nameRegExp = /.?\s[a-zA-Z]+\((.*)\)/;
-        let routeParams: string[] = [];
+        let routeParams = new Array<vscode.CompletionItem>();
         actionMethods.forEach((a) => {
             let completeParams = nameRegExp.exec(a);
             if (completeParams[1]) {
                 completeParams[1].split(', ').forEach(param => {
-                    routeParams.push('asp-route-' + param.split(' ')[1] + '=""');
+                    let item = new vscode.CompletionItem('asp-route-' + param.split(' ')[1]);
+                    item.insertText = param.split(' ')[1] + '=""';
+                    routeParams.push(item);
                 })
             }
         });
@@ -153,31 +163,14 @@ export default class DeclarationInfo {
     }
 
     // Get currently typed params
-    private getCurrentArea(input: string): string {
-        let areaTest = /.*asp-area="([a-zA-Z]+)".?/;
-        if (!areaTest.test(input))
-            return '';
+    private areaRegExp: RegExp = /.*asp-area="([a-zA-Z]+)".?/;
+    private controllerRegExp: RegExp = /.*asp-controller="([a-zA-Z]+)".?/;
+    private actionRegExp: RegExp = /.*asp-action="([a-zA-Z]+)".?/;
 
-        let areas = areaTest.exec(input);
-        return areas[1];
-    }
+    private getCurrentInput(input: string, regExp: RegExp): string {
+        if (!regExp.test(input)) return ''
 
-    private getCurrentController(input: string): string {
-        let controllerTest = /.*asp-controller="([a-zA-Z]+)".?/;
-        if (!controllerTest.test(input))
-            return '';
-
-        let controllers = controllerTest.exec(input);
-        return controllers[1];
-    }
-
-    private getCurrentAction(input: string): string {
-        let actionTest = /.*asp-action="([a-zA-Z]+)".?/;
-        if (!actionTest.test(input))
-            return '';
-
-        let actions = actionTest.exec(input);
-        return actions[1];
+        return regExp.exec(input)[1];
     }
 
 }
