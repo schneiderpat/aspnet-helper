@@ -1,6 +1,6 @@
 {
     "name": "aspnet-helper",
-    "displayName": "ASPNET Helper",
+    "displayName": "ASP.NET Helper",
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
     "version": "0.1.0",
     "publisher": "schneiderpat",
