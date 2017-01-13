@@ -1,9 +1,8 @@
-import ParsingResult from './parsingResult';
+import * as vscode from 'vscode';
 
 interface IParser {
 
-    getParsingResult(string): ParsingResult;
-    getSuggestions(string): string[];
+    getParsingResults(string): vscode.CompletionList;
 
 }
 

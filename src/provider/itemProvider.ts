@@ -13,22 +13,16 @@ export default class ItemProvider implements vscode.CompletionItemProvider {
 
     public provideCompletionItems(document: vscode.TextDocument,
                                     position: vscode.Position,
-                                    token: vscode.CancellationToken): Thenable<vscode.CompletionItem[]> {
+                                    token: vscode.CancellationToken): Thenable<vscode.CompletionList> {
 
         let start = new vscode.Position(position.line, 0);
         let range = new vscode.Range(start, position);
         let text = document.getText(range);
 
-        let parsingResult = this._parser.getParsingResult(text);
+        let items = this._parser.getParsingResults(text);
 
-        let suggestions = parsingResult.suggestions.map((v) => this.toSuggestion(v));
+        return Promise.resolve(items);
 
-        return Promise.resolve(suggestions);
-
-    }
-
-    private toSuggestion(variant: string): vscode.CompletionItem {
-        return new vscode.CompletionItem(variant);
     }
 
 }
