@@ -34,11 +34,14 @@ export default class DeclarationInfo {
 
         let projectPath = vscode.workspace.rootPath;
         let pattern: string;
-        let area = this.getCurrentInput(input, this.areaRegExp);
+        let area = this.getSpecificPart(input, this.currentAreaRegExp, 1);
         let files = this.getControllerFiles(area);
         
         let controllers = new vscode.CompletionList();
-        files.forEach((f) => { controllers.items.push(new vscode.CompletionItem(this.extractController(f))); });
+        files.forEach((f) => { 
+            let item = new vscode.CompletionItem(this.getSpecificPart(f, this.controllerNameRegExp, 1));
+            controllers.items.push(item); 
+        });
 
         return controllers;
     }
@@ -56,12 +59,6 @@ export default class DeclarationInfo {
         });
     }
 
-    private extractController(file: string): string {
-        let regExp = /([a-zA-Z]+)Controller\.cs/;
-        let results = regExp.exec(file);
-        return results[1];
-    }
-
     // Add actions
     public testForAction(input: string): vscode.CompletionList {
         let actionTest = /.*asp-action=".?/;
@@ -76,9 +73,15 @@ export default class DeclarationInfo {
             let routeParams = this.getCurrentActionMethodRouteParams(input, a);
             if (routeParams.items.length > 0) {
                 item.documentation = 'Found route parameters:\n';
+                let currentPosition = vscode.window.activeTextEditor.selection.active;
+                let position = new vscode.Position(currentPosition.line, currentPosition.character + 1);
+                let textEdit = ' ';
                 routeParams.items.forEach((r) => {
                     item.documentation += r.label + '\n';
+                    textEdit += r.label + '="" ';
                 });
+                item.additionalTextEdits = new Array<vscode.TextEdit>();
+                item.additionalTextEdits.push(new vscode.TextEdit(new vscode.Range(position, position), textEdit));
             }
             actions.items.push(item);
         });
@@ -88,8 +91,8 @@ export default class DeclarationInfo {
 
     private getControllerPath(input: string): string {
         let rootDir = vscode.workspace.rootPath;
-        let area = this.getCurrentInput(input, this.areaRegExp);
-        let controller = this.getCurrentInput(input, this.controllerRegExp);
+        let area = this.getSpecificPart(input, this.currentAreaRegExp, 1);
+        let controller = this.getSpecificPart(input, this.currentControllerRegExp, 1);
         if (area !== '') {
             return rootDir + path.sep + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
         } else {
@@ -97,6 +100,8 @@ export default class DeclarationInfo {
         }
     }
 
+    private asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
+    private syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
     private getActionMethods(input: string): string[] {
         let pattern = this.getControllerPath(input);
         let file = fs.readFileSync(pattern, 'utf8');
@@ -104,26 +109,21 @@ export default class DeclarationInfo {
         let actions: string[] = [];
 
         let asyncActions = file.match(this.asyncActionsRegExp);
-        if (asyncActions) actions = actions.concat(this.extractActionNames(asyncActions));
+        if (asyncActions) {
+            asyncActions.forEach((a) => {
+                actions.push(this.getSpecificPart(a, this.actionNameRegExp, 1));
+            });
+        }
 
         let syncActions = file.match(this.syncActionsRegExp);
-        if (syncActions) actions = actions.concat(this.extractActionNames(syncActions));
+        if (syncActions) {
+            syncActions.forEach((a) => {
+                actions.push(this.getSpecificPart(a, this.actionNameRegExp, 1));
+            });
+        }
 
         return actions;
 
-    }
-
-    private asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
-    private syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
-    private extractActionNames(actionMethods: RegExpMatchArray): string[]
-    {
-        let nameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
-        let actions: string[] = [];
-        actionMethods.forEach((a) => {
-            let name = nameRegExp.exec(a);
-            if (name) actions.push(name[1]);
-        })
-        return actions;
     }
 
     // Add route params
@@ -137,7 +137,7 @@ export default class DeclarationInfo {
 
     private getCurrentActionMethodRouteParams(input: string, action?: string): vscode.CompletionList {
         let pattern = this.getControllerPath(input);
-        if (!action) action = this.getCurrentInput(input, this.actionRegExp);
+        if (!action) action = this.getSpecificPart(input, this.currentActionRegExp, 1);
         let file = fs.readFileSync(pattern, 'utf8');
 
         let routeParams = new vscode.CompletionList();
@@ -169,15 +169,16 @@ export default class DeclarationInfo {
         return routeParams;
     }
 
-    // Get currently typed params
-    private areaRegExp: RegExp = /.*asp-area="([a-zA-Z]+)".?/;
-    private controllerRegExp: RegExp = /.*asp-controller="([a-zA-Z]+)".?/;
-    private actionRegExp: RegExp = /.*asp-action="([a-zA-Z]+)".?/;
+    // Get specfic part of a text
+    private currentAreaRegExp: RegExp = /.*asp-area="([a-zA-Z]+)".?/;
+    private currentControllerRegExp: RegExp = /.*asp-controller="([a-zA-Z]+)".?/;
+    private currentActionRegExp: RegExp = /.*asp-action="([a-zA-Z]+)".?/;
+    private controllerNameRegExp = /([a-zA-Z]+)Controller\.cs/;
+    private actionNameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
 
-    private getCurrentInput(input: string, regExp: RegExp): string {
-        if (!regExp.test(input)) return ''
-
-        return regExp.exec(input)[1];
+    private getSpecificPart(text: string, regExp: RegExp, part: number): string {
+        if (!regExp.test(text)) return ''
+        return regExp.exec(text)[part];
     }
 
     private createRouteSnippet(param: string): vscode.SnippetString {
