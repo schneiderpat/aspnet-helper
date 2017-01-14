@@ -1,3 +1,7 @@
+## 0.3.0
+
+* Suggestions for actions show now route parameters in description
+
 ## 0.2.0
 
 * Improved asp-route with text snippet
