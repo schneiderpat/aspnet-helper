@@ -154,7 +154,7 @@ export default class DeclarationInfo {
             if (completeParams[1]) {
                 completeParams[1].split(', ').forEach(param => {
                     let item = new vscode.CompletionItem('asp-route-' + param.split(' ')[1]);
-                    item.insertText = param.split(' ')[1] + '=""';
+                    item.insertText = this.createRouteSnippet(param.split(' ')[1]);
                     routeParams.push(item);
                 })
             }
@@ -171,6 +171,10 @@ export default class DeclarationInfo {
         if (!regExp.test(input)) return ''
 
         return regExp.exec(input)[1];
+    }
+
+    private createRouteSnippet(param: string): vscode.SnippetString {
+        return new vscode.SnippetString(param + "=\"$1\"$0");    
     }
 
 }
