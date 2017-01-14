@@ -72,7 +72,15 @@ export default class DeclarationInfo {
 
         let actionNames = this.getActionMethods(input);
         actionNames.forEach((a) => {
-            actions.items.push(new vscode.CompletionItem(a));
+            let item = new vscode.CompletionItem(a);
+            let routeParams = this.getCurrentActionMethodRouteParams(input, a);
+            if (routeParams.items.length > 0) {
+                item.documentation = 'Found route parameters:\n';
+                routeParams.items.forEach((r) => {
+                    item.documentation += r.label + '\n';
+                });
+            }
+            actions.items.push(item);
         });
 
         return actions;
@@ -127,13 +135,12 @@ export default class DeclarationInfo {
         return this.getCurrentActionMethodRouteParams(input);
     }
 
-    private getCurrentActionMethodRouteParams(input: string): vscode.CompletionList {
+    private getCurrentActionMethodRouteParams(input: string, action?: string): vscode.CompletionList {
         let pattern = this.getControllerPath(input);
-        let action = this.getCurrentInput(input, this.actionRegExp);
+        if (!action) action = this.getCurrentInput(input, this.actionRegExp);
         let file = fs.readFileSync(pattern, 'utf8');
 
         let routeParams = new vscode.CompletionList();
-        let nameRegExp = /.?\s[a-zA-Z]+\((.*)\)/;
 
         let asyncActionRegExp = new RegExp('\\[HttpGet\\]\r\n\\s*public\\sasync\\sTask<[a-zA-Z]+>\\s' + action + '\\(.*\\)', 'g');
         let asyncActions = file.match(asyncActionRegExp);
