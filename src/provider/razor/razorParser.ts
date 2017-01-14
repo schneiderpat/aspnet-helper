@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import DeclarationInfo from './declarationInfo';
 import IParser from '../iParser';
 
-export default class HtmlParser implements IParser {
+export default class RazorParser implements IParser {
 
     private _declarationInfo: DeclarationInfo;
 

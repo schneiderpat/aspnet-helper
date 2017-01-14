@@ -5,7 +5,7 @@
     "version": "0.1.1",
     "publisher": "schneiderpat",
     "keywords": [
-        "C#", "csharp"
+        "C#", "csharp", "Razor"
     ],
     "repository": {
         "type": "git",
