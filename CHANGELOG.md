@@ -1,3 +1,7 @@
+## 0.4.0
+
+* Auto generate asp-route if found
+
 ## 0.3.0
 
 * Suggestions for actions show now route parameters in description
