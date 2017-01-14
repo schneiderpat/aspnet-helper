@@ -4,6 +4,9 @@
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
     "version": "0.1.1",
     "publisher": "schneiderpat",
+    "keywords": [
+        "C#", "csharp"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/schneiderpat/aspnet-helper"
