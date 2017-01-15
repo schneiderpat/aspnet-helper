@@ -34,12 +34,12 @@ export default class TagHelperDeclarationInfo {
 
         let projectPath = vscode.workspace.rootPath;
         let pattern: string;
-        let area = this.getSpecificPart(input, this.currentAreaRegExp, 1);
+        let area = this.getSpecificPart(input, this.currentAreaRegExp);
         let files = this.getControllerFiles(area);
         
         let controllers = new vscode.CompletionList();
         files.forEach((f) => { 
-            let item = new vscode.CompletionItem(this.getSpecificPart(f, this.controllerNameRegExp, 1));
+            let item = new vscode.CompletionItem(this.getSpecificPart(f, this.controllerNameRegExp));
             controllers.items.push(item); 
         });
 
@@ -91,8 +91,8 @@ export default class TagHelperDeclarationInfo {
 
     private getControllerPath(input: string): string {
         let rootDir = vscode.workspace.rootPath;
-        let area = this.getSpecificPart(input, this.currentAreaRegExp, 1);
-        let controller = this.getSpecificPart(input, this.currentControllerRegExp, 1);
+        let area = this.getSpecificPart(input, this.currentAreaRegExp);
+        let controller = this.getSpecificPart(input, this.currentControllerRegExp);
         if (area !== '') {
             return rootDir + path.sep + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
         } else {
@@ -111,14 +111,14 @@ export default class TagHelperDeclarationInfo {
         let asyncActions = file.match(this.asyncActionsRegExp);
         if (asyncActions) {
             asyncActions.forEach((a) => {
-                actions.push(this.getSpecificPart(a, this.actionNameRegExp, 1));
+                actions.push(this.getSpecificPart(a, this.actionNameRegExp));
             });
         }
 
         let syncActions = file.match(this.syncActionsRegExp);
         if (syncActions) {
             syncActions.forEach((a) => {
-                actions.push(this.getSpecificPart(a, this.actionNameRegExp, 1));
+                actions.push(this.getSpecificPart(a, this.actionNameRegExp));
             });
         }
 
@@ -137,7 +137,7 @@ export default class TagHelperDeclarationInfo {
 
     private getCurrentActionMethodRouteParams(input: string, action?: string): vscode.CompletionList {
         let pattern = this.getControllerPath(input);
-        if (!action) action = this.getSpecificPart(input, this.currentActionRegExp, 1);
+        if (!action) action = this.getSpecificPart(input, this.currentActionRegExp);
         let file = fs.readFileSync(pattern, 'utf8');
 
         let routeParams = new vscode.CompletionList();
@@ -176,7 +176,7 @@ export default class TagHelperDeclarationInfo {
     private controllerNameRegExp = /([a-zA-Z]+)Controller\.cs/;
     private actionNameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
 
-    private getSpecificPart(text: string, regExp: RegExp, part: number): string {
+    private getSpecificPart(text: string, regExp: RegExp, part: number = 1): string {
         if (!regExp.test(text)) return ''
         return regExp.exec(text)[part];
     }
