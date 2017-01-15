@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-export default class DeclarationInfo {
+export default class TagHelperDeclarationInfo {
     
     // Add areas
     public testForArea(input: string): vscode.CompletionList {

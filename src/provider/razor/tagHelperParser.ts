@@ -1,10 +1,10 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import DeclarationInfo from './declarationInfo';
+import DeclarationInfo from './tagHelperDeclarationInfo';
 import IParser from '../iParser';
 
-export default class RazorParser implements IParser {
+export default class TagHelperParser implements IParser {
 
     private _declarationInfo: DeclarationInfo;
 
