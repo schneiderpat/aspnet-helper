@@ -13,7 +13,6 @@ export default class TagHelperParser implements IParser {
         this._declarationInfo = new DeclarationInfo();
 
         let items = this.getItems(input);
-        let userInput = this.getUserInput(input);
 
         return items;
 
@@ -46,14 +45,5 @@ export default class TagHelperParser implements IParser {
         }
 
         return suggestions;
-    }
-
-    private getUserInput(input: string): string {
-        let regExp = /"([a-zA-Z]+)$/;
-
-        if (!regExp.test(input))
-            return '';
-
-        return regExp.exec(input)[0];
     }
 }
