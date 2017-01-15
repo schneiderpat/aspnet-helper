@@ -19,7 +19,7 @@ export default class ItemProvider implements vscode.CompletionItemProvider {
         let range = new vscode.Range(start, position);
         let text = document.getText(range);
 
-        let items = this._parser.getParsingResults(text);
+        let items = this._parser.getParsingResults(text, document);
 
         return Promise.resolve(items);
 
