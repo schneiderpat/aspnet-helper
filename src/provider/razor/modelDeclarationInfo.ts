@@ -66,6 +66,7 @@ export default class ModelDeclarationInfo {
             let bodyRegExp = /public\s([a-zA-Z]+<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
             let body = text.match(bodyRegExp);
             if (body) {
+                body = body.filter(f => !f.includes('class'));
                 let properties = new Array<vscode.CompletionItem>();
                 body.forEach(b => { 
                     let propType = this.getSpecificPart(b, this.propRegExp);
