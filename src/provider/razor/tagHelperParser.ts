@@ -8,9 +8,9 @@ export default class TagHelperParser implements IParser {
 
     private _declarationInfo: DeclarationInfo;
 
-    public getParsingResults(input: string): vscode.CompletionList {
+    public getParsingResults(input: string, document: vscode.TextDocument): vscode.CompletionList {
 
-        this._declarationInfo = new DeclarationInfo(input);
+        this._declarationInfo = new DeclarationInfo(input, document);
 
         let items = this.getItems();
 

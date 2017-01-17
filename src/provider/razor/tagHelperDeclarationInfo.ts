@@ -1,13 +1,32 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as glob from 'glob';
 
 export default class TagHelperDeclarationInfo {
 
+    private _document: vscode.TextDocument;
     private _input: string;
+    private _rootDir: string;
 
-    constructor(input: string) {
+    constructor(input: string, document: vscode.TextDocument) {
         this._input = input;
+        this._document = document;
+        this.getRootPath();
+    }
+
+    private getRootPath() {
+        let currentDir = this._document.uri.fsPath;
+
+        while (currentDir !== vscode.workspace.rootPath) {
+            currentDir = path.dirname(currentDir);
+            fs.readdirSync(currentDir).forEach(f => {
+                if (f.includes('project.json') || f.includes('csproj')) {
+                    this._rootDir = currentDir;
+                    return;
+                } 
+            });
+        }
     }
     
     // Add areas
@@ -25,7 +44,7 @@ export default class TagHelperDeclarationInfo {
     }
 
     private getDirectories(): string[] {
-        let rootDir = vscode.workspace.rootPath + path.sep + 'Areas' + path.sep;
+        let rootDir = this._rootDir + path.sep + 'Areas' + path.sep;
         let directories = fs.readdirSync(rootDir).filter((file) => {
             return fs.statSync(path.join(rootDir, file)).isDirectory();
         });
@@ -38,8 +57,6 @@ export default class TagHelperDeclarationInfo {
         if (!controllerTest.test(this._input))
             return new vscode.CompletionList();
 
-        let projectPath = vscode.workspace.rootPath;
-        let pattern: string;
         let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
         let files = this.getControllerFiles(area);
         
@@ -54,16 +71,15 @@ export default class TagHelperDeclarationInfo {
     }
 
     private getControllerFiles(area?: string): string[] {
-        let rootDir = vscode.workspace.rootPath;
+        let pattern = this._rootDir + path.sep;
         if (area) {
-            rootDir += path.sep + 'Areas' + path.sep + area + path.sep + "Controllers" + path.sep;
+            pattern += 'Areas' + path.sep + area + path.sep + "Controllers" + path.sep + '*Controller.cs';
         } else {
-            rootDir += path.sep + "Controllers" + path.sep;
+            pattern += "Controllers" + path.sep + path.sep + '*Controller.cs';
         }
 
-        return fs.readdirSync(rootDir).filter((file) => {
-            return fs.statSync(path.join(rootDir, file)).isFile();
-        });
+        let files = glob.sync(pattern);
+        if (files) return files
     }
 
     // Add actions
@@ -98,13 +114,13 @@ export default class TagHelperDeclarationInfo {
     }
 
     private getControllerPath(): string {
-        let rootDir = vscode.workspace.rootPath;
+        let pattern = this._rootDir + path.sep;
         let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
         let controller = this.getSpecificPart(this._input, this.currentControllerRegExp);
         if (area !== '') {
-            return rootDir + path.sep + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
+            return pattern + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
         } else {
-            return rootDir + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
+            return pattern + 'Controllers' + path.sep + controller + 'Controller.cs';
         }
     }
 
@@ -146,10 +162,10 @@ export default class TagHelperDeclarationInfo {
     private getCurrentActionMethodRouteParams(action?: string): vscode.CompletionList {
         let pattern = this.getControllerPath();
         if (!action) action = this.getSpecificPart(this._input, this.currentActionRegExp);
-        let file = fs.readFileSync(pattern, 'utf8');
+
 
         let routeParams = new vscode.CompletionList();
-
+        let file = fs.readFileSync(pattern, 'utf8');
         let asyncActionRegExp = new RegExp('\\[HttpGet\\]\r\n\\s*public\\sasync\\sTask<[a-zA-Z]+>\\s' + action + '\\(.*\\)', 'g');
         let asyncActions = file.match(asyncActionRegExp);
         if (asyncActions) routeParams.items = routeParams.items.concat(this.extractRouteParams(asyncActions));
