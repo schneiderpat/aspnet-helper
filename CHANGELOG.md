@@ -1,3 +1,7 @@
+## 0.5.0
+
+* Razor model parser
+
 ## 0.4.0
 
 * Auto generate asp-route if found
