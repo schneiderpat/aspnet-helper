@@ -89,8 +89,8 @@ export default class TagHelperDeclarationInfo {
                 });
                 item.additionalTextEdits = new Array<vscode.TextEdit>();
                 item.additionalTextEdits.push(new vscode.TextEdit(new vscode.Range(position, position), textEdit));
-                item.kind = vscode.CompletionItemKind.Method;
             }
+            item.kind = vscode.CompletionItemKind.Method;
             actions.items.push(item);
         });
 
@@ -157,7 +157,6 @@ export default class TagHelperDeclarationInfo {
         let syncActionRegExp = new RegExp('\\[HttpGet\\]\r\n\\s*public\\s[a-zA-Z]+\\s' + action + '\\(.*\\)', 'g');
         let syncActions = file.match(syncActionRegExp);
         if (syncActions) routeParams.items = routeParams.items.concat(this.extractRouteParams(syncActions));
-
         return routeParams;
     }
 
@@ -169,12 +168,13 @@ export default class TagHelperDeclarationInfo {
             if (completeParams[1]) {
                 completeParams[1].split(', ').forEach(param => {
                     let item = new vscode.CompletionItem('asp-route-' + param.split(' ')[1]);
-                    item.kind = vscode.CompletionItemKind.Variable;
                     item.insertText = this.createRouteSnippet(param.split(' ')[1]);
+                    item.kind = vscode.CompletionItemKind.Variable;
                     routeParams.push(item);
                 })
             }
         });
+
         return routeParams;
     }
 
