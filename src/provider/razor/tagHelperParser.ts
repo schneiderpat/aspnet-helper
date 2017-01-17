@@ -10,34 +10,34 @@ export default class TagHelperParser implements IParser {
 
     public getParsingResults(input: string): vscode.CompletionList {
 
-        this._declarationInfo = new DeclarationInfo();
+        this._declarationInfo = new DeclarationInfo(input);
 
-        let items = this.getItems(input);
+        let items = this.getItems();
 
         return items;
 
     }
 
-    getItems(input: string): vscode.CompletionList {
+    getItems(): vscode.CompletionList {
         let suggestions = new vscode.CompletionList();
 
-        let areas = this._declarationInfo.testForArea(input);
+        let areas = this._declarationInfo.testForArea();
         suggestions.items = suggestions.items.concat(areas.items);
 
-        let controllers = this._declarationInfo.testForController(input);
+        let controllers = this._declarationInfo.testForController();
         if (controllers.items.length > 0) {
             suggestions = new vscode.CompletionList();
             suggestions.items = suggestions.items.concat(controllers.items);
         }
 
-        let actions = this._declarationInfo.testForAction(input);
+        let actions = this._declarationInfo.testForAction();
         if (actions.items.length > 0)
         {
             suggestions = new vscode.CompletionList();
             suggestions.items = suggestions.items.concat(actions.items);
         }
 
-        let routeParams = this._declarationInfo.testForRouteParams(input);
+        let routeParams = this._declarationInfo.testForRouteParams();
         if (routeParams.items.length > 0)
         {
             suggestions = new vscode.CompletionList();

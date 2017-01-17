@@ -3,11 +3,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export default class TagHelperDeclarationInfo {
+
+    private _input: string;
+
+    constructor(input: string) {
+        this._input = input;
+    }
     
     // Add areas
-    public testForArea(input: string): vscode.CompletionList {
+    public testForArea(): vscode.CompletionList {
         let areaTest = /.*asp-area=".?/;
-        if (!areaTest.test(input))
+        if (!areaTest.test(this._input))
             return new vscode.CompletionList();
 
         let areas = new vscode.CompletionList();
@@ -27,19 +33,20 @@ export default class TagHelperDeclarationInfo {
     }
 
     // Add controllers
-    public testForController(input: string): vscode.CompletionList {
+    public testForController(): vscode.CompletionList {
         let controllerTest = /.*asp-controller=".?/;
-        if (!controllerTest.test(input))
+        if (!controllerTest.test(this._input))
             return new vscode.CompletionList();
 
         let projectPath = vscode.workspace.rootPath;
         let pattern: string;
-        let area = this.getSpecificPart(input, this.currentAreaRegExp);
+        let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
         let files = this.getControllerFiles(area);
         
         let controllers = new vscode.CompletionList();
         files.forEach((f) => { 
             let item = new vscode.CompletionItem(this.getSpecificPart(f, this.controllerNameRegExp));
+            item.kind = vscode.CompletionItemKind.Class;
             controllers.items.push(item); 
         });
 
@@ -60,17 +67,17 @@ export default class TagHelperDeclarationInfo {
     }
 
     // Add actions
-    public testForAction(input: string): vscode.CompletionList {
+    public testForAction(): vscode.CompletionList {
         let actionTest = /.*asp-action=".?/;
-        if (!actionTest.test(input))
+        if (!actionTest.test(this._input))
             return new vscode.CompletionList;
         
         let actions = new vscode.CompletionList;
 
-        let actionNames = this.getActionMethods(input);
+        let actionNames = this.getActionMethods();
         actionNames.forEach((a) => {
             let item = new vscode.CompletionItem(a);
-            let routeParams = this.getCurrentActionMethodRouteParams(input, a);
+            let routeParams = this.getCurrentActionMethodRouteParams(a);
             if (routeParams.items.length > 0) {
                 item.documentation = 'Found route parameters:\n';
                 let currentPosition = vscode.window.activeTextEditor.selection.active;
@@ -82,6 +89,7 @@ export default class TagHelperDeclarationInfo {
                 });
                 item.additionalTextEdits = new Array<vscode.TextEdit>();
                 item.additionalTextEdits.push(new vscode.TextEdit(new vscode.Range(position, position), textEdit));
+                item.kind = vscode.CompletionItemKind.Method;
             }
             actions.items.push(item);
         });
@@ -89,10 +97,10 @@ export default class TagHelperDeclarationInfo {
         return actions;
     }
 
-    private getControllerPath(input: string): string {
+    private getControllerPath(): string {
         let rootDir = vscode.workspace.rootPath;
-        let area = this.getSpecificPart(input, this.currentAreaRegExp);
-        let controller = this.getSpecificPart(input, this.currentControllerRegExp);
+        let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
+        let controller = this.getSpecificPart(this._input, this.currentControllerRegExp);
         if (area !== '') {
             return rootDir + path.sep + 'Areas' + path.sep + area + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
         } else {
@@ -102,8 +110,8 @@ export default class TagHelperDeclarationInfo {
 
     private asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
     private syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
-    private getActionMethods(input: string): string[] {
-        let pattern = this.getControllerPath(input);
+    private getActionMethods(): string[] {
+        let pattern = this.getControllerPath();
         let file = fs.readFileSync(pattern, 'utf8');
         
         let actions: string[] = [];
@@ -127,17 +135,17 @@ export default class TagHelperDeclarationInfo {
     }
 
     // Add route params
-    public testForRouteParams(input: string): vscode.CompletionList {
+    public testForRouteParams(): vscode.CompletionList {
         let routeParamsTest = /.*asp-route-.?/;
-        if (!routeParamsTest.test(input))
+        if (!routeParamsTest.test(this._input))
             return new vscode.CompletionList();
 
-        return this.getCurrentActionMethodRouteParams(input);
+        return this.getCurrentActionMethodRouteParams();
     }
 
-    private getCurrentActionMethodRouteParams(input: string, action?: string): vscode.CompletionList {
-        let pattern = this.getControllerPath(input);
-        if (!action) action = this.getSpecificPart(input, this.currentActionRegExp);
+    private getCurrentActionMethodRouteParams(action?: string): vscode.CompletionList {
+        let pattern = this.getControllerPath();
+        if (!action) action = this.getSpecificPart(this._input, this.currentActionRegExp);
         let file = fs.readFileSync(pattern, 'utf8');
 
         let routeParams = new vscode.CompletionList();
@@ -161,6 +169,7 @@ export default class TagHelperDeclarationInfo {
             if (completeParams[1]) {
                 completeParams[1].split(', ').forEach(param => {
                     let item = new vscode.CompletionItem('asp-route-' + param.split(' ')[1]);
+                    item.kind = vscode.CompletionItemKind.Variable;
                     item.insertText = this.createRouteSnippet(param.split(' ')[1]);
                     routeParams.push(item);
                 })
