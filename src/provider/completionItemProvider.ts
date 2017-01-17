@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import IParser from './iParser';
 
-export default class ItemProvider implements vscode.CompletionItemProvider {
+export default class CompletionItemProvider implements vscode.CompletionItemProvider {
 
     private _parser: IParser;
 
