@@ -40,4 +40,8 @@ export default class ModelParser implements IParser {
 
     }
 
+    public getHoverResult(input: string, document: vscode.TextDocument) {
+
+    }
+
 }

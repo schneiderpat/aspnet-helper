@@ -46,4 +46,8 @@ export default class TagHelperParser implements IParser {
 
         return suggestions;
     }
+
+    public getHoverResult(input) {
+
+    }
 }
