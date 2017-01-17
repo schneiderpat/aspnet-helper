@@ -7,6 +7,11 @@
     "keywords": [
         "C#", "csharp", "Razor", "Snippets"
     ],
+    "galleryBanner": {
+        "color": "#2c2c2c",
+        "theme": "dark"
+    },
+    "icon": "images/icon.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/schneiderpat/aspnet-helper"
