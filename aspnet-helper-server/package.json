@@ -1,0 +1,30 @@
+{
+	"name": "aspnet-helper-server",
+	"description": "The server part of the ASP.NET Helper extension",
+	"version": "0.1.0",
+	"author": "Patrick Schneider",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/schneiderpat/aspnet-helper"
+	},
+	"bugs": {
+		"url": "https://github.com/schneiderpat/aspnet-helper/issues"
+	},
+	"engines": {
+		"node": "*"
+	},
+	"dependencies": {
+		"lodash": "^4.11.1",
+		"minimatch": "^3.0.0",
+		"vscode-languageserver": "^1.0.1",
+		"parse-gitignore": "^0.2.0"
+	},
+	"devDependencies": {
+		"typescript": "^2.0.3"
+	},
+	"scripts": {
+		"compile": "installServerIntoExtension ../aspnet-helper ./package.json ./src/tsconfig.json && tsc -p ./src",
+		"watch": "installServerIntoExtension ../aspnet-helper ./package.json ./src/tsconfig.json && tsc --watch -p ./src"
+	}
+}
