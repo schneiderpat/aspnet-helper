@@ -12,8 +12,14 @@ export default class ModelDeclarationInfo {
         this._document = document;
     }
 
-    public userWantsSuggestions(input: string): boolean {
-        let userRegExp = /.*@Model.$/;
+    public userWantsProperties(input: string): boolean {
+        let userRegExp = /.*@Model\.?$/;
+        if (userRegExp.test(input)) return true;
+        return false
+    }
+
+    public userWantsSingleProperty(input: string): boolean {
+        let userRegExp = /.*@Model\.[a-zA-Z]*$/;
         if (userRegExp.test(input)) return true;
         return false
     }
@@ -93,6 +99,16 @@ export default class ModelDeclarationInfo {
             items.push(item);
         });
         return items;
+    }
+
+    public convertPropertiesToHoverResult(property:Property): vscode.Hover {
+        let text = property.type + ' ' + property.name;
+        let markedString: vscode.MarkedString;
+        markedString = {
+            language: 'csharp',
+            value: text
+        };
+        return new vscode.Hover(markedString);
     }
 
     private getMatchingFiles(model: string, namespaces: string[]): string[] {

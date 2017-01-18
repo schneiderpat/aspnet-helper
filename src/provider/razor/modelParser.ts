@@ -18,7 +18,7 @@ export default class ModelParser implements IParser {
 
     getItems(input: string): vscode.CompletionList {
 
-        let userWantsSuggestions = this._declarationInfo.userWantsSuggestions(input);
+        let userWantsSuggestions = this._declarationInfo.userWantsProperties(input);
 
         if (!userWantsSuggestions) return new vscode.CompletionList();
 
@@ -40,6 +40,26 @@ export default class ModelParser implements IParser {
     }
 
     public getHoverResult(input: string, document: vscode.TextDocument) {
+
+        this._declarationInfo = new DeclarationInfo(document);
+
+        let userWantsSinglePropertie = this._declarationInfo.userWantsSingleProperty(input);
+
+        if (!userWantsSinglePropertie) return;
+
+        let model = this._declarationInfo.getCurrentModel();
+
+        if (!model) return;
+
+        let namespaces = this._declarationInfo.getNamespaces();
+
+        let properties = this._declarationInfo.getProperties(model, namespaces);
+
+        if (!properties) return;
+        properties = properties.filter(p => { return input.split('.')[1] === p.name })
+        if (!properties) return;
+        let hover = this._declarationInfo.convertPropertiesToHoverResult(properties[0]);
+        return hover;
 
     }
 
