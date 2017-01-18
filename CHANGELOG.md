@@ -1,3 +1,8 @@
+## 0.5.1
+
+* Added support for generic action methods
+* Fixed anchor tag helper
+
 ## 0.5.0
 
 * Razor model parser
