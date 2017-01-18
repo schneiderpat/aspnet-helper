@@ -10,13 +10,26 @@ import * as assert from 'assert';
 // as well as import your extension to test it
 import * as vscode from 'vscode';
 import * as myExtension from '../src/extension';
+import { Property, GetParts } from '../src/provider/parsingResults';
 
 // Defines a Mocha test suite to group tests of similar kind together
 suite("Extension Tests", () => {
 
-    // Defines a Mocha unit test
-    test("Something 1", () => {
-        assert.equal(-1, [1, 2, 3].indexOf(5));
-        assert.equal(-1, [1, 2, 3].indexOf(0));
+    test("Get parsing results", () => {
+
+        let propRegExp = /public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
+        let text = 'public string FirstName';
+        let prop = new Property();
+        prop.name = 'FirstName';
+        prop.type = 'string';
+
+        let regExpResult = GetParts(text, new RegExp(propRegExp.source));
+        let result = new Property();
+        result.name = regExpResult[2];
+        result.type = regExpResult[1];
+
+        assert.deepEqual(prop, result);
+
     });
+    
 });
