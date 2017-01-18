@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
-import { ActionResult, RouteParameter, GetParts } from '../parsingResults';
+import { ActionResult, Property, GetParts } from '../parsingResults';
 
 export default class TagHelperDeclarationInfo {
 
@@ -194,7 +194,7 @@ export default class TagHelperDeclarationInfo {
         return actionResults[0];
     }
 
-    public convertRouteParamsToCompletionItems(routeParams: RouteParameter[]): vscode.CompletionItem[] {
+    public convertRouteParamsToCompletionItems(routeParams: Property[]): vscode.CompletionItem[] {
         let items = new Array<vscode.CompletionItem>();
         routeParams.forEach(r => {
             let item = new vscode.CompletionItem('asp-route-' + r.name);

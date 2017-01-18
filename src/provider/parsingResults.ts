@@ -13,7 +13,7 @@ export class ActionResult {
 
     public name: string;
     public type: string;
-    public routeParams: RouteParameter[];
+    public routeParams: Property[];
 
     private parseActionResult(actionResult: string, type: TagHelperRegExp) {
         let parts: RegExpExecArray
@@ -29,10 +29,10 @@ export class ActionResult {
 
     private parseRouteParams(routeParams: string) {
 
-        if (!this.routeParams) this.routeParams = new Array<RouteParameter>()
+        if (!this.routeParams) this.routeParams = new Array<Property>()
         routeParams.split(', ').forEach(p => {
             let param = p.split(' ');
-            let item = new RouteParameter();
+            let item = new Property();
             item.type = param[0];
             item.name = param[1];
             this.routeParams.push(item);
@@ -46,7 +46,7 @@ export enum TagHelperRegExp {
     Sync
 }
 
-export class RouteParameter {
+export class Property {
     public name: string;
     public type: string;
 }
