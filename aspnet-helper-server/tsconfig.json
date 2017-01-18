@@ -1,10 +1,13 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es5",
+        "target": "es6",
         "moduleResolution": "node",
         "sourceMap": true,
-        "outDir": "../../aspnet-helper/server"
+        "lib": [
+            "es2016"
+        ],
+        "outDir": "../aspnet-helper/server"
     },
     "exclude": [
         "node_modules"

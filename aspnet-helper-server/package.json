@@ -15,16 +15,17 @@
 		"node": "*"
 	},
 	"dependencies": {
-		"lodash": "^4.11.1",
-		"minimatch": "^3.0.0",
-		"vscode-languageserver": "^1.0.1",
-		"parse-gitignore": "^0.2.0"
+		"lodash": "^4.17.4",
+		"minimatch": "^3.0.3",
+		"vscode-languageserver": "^2.6.2",
+		"parse-gitignore": "^0.3.1"
 	},
 	"devDependencies": {
-		"typescript": "^2.0.3"
+		"@types/node": "^7.0.0",
+		"typescript": "^2.1.5"
 	},
 	"scripts": {
-		"compile": "installServerIntoExtension ../aspnet-helper ./package.json ./src/tsconfig.json && tsc -p ./src",
-		"watch": "installServerIntoExtension ../aspnet-helper ./package.json ./src/tsconfig.json && tsc --watch -p ./src"
+		"compile": "installServerIntoExtension ../aspnet-helper ./package.json ./tsconfig.json && tsc -p .",
+		"watch": "installServerIntoExtension ../aspnet-helper ./package.json ./tsconfig.json && tsc --watch -p ."
 	}
 }
