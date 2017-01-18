@@ -45,6 +45,7 @@
         "@types/glob":  "^5.0.30"
     },
     "dependencies": {
-        "glob": "^7.1.1"
+        "glob": "^7.1.1",
+        "vscode-languageclient": "^2.6.3"
     }
 }
