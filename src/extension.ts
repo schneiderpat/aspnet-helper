@@ -10,8 +10,8 @@ export function activate(context: vscode.ExtensionContext) {
 
     let tagHelperCompletionItemProvider = new CompletionItemProvider(new TagHelperParser());
     let modelCompletionItemProvider = new CompletionItemProvider(new ModelParser());
-    vscode.languages.registerCompletionItemProvider('razor', tagHelperCompletionItemProvider);
-    vscode.languages.registerCompletionItemProvider('razor', modelCompletionItemProvider);
+    vscode.languages.registerCompletionItemProvider('razor', tagHelperCompletionItemProvider, '"');
+    vscode.languages.registerCompletionItemProvider('razor', modelCompletionItemProvider, '.');
 
     let modelHoverProvider = new HoverProvider(new ModelParser());
     vscode.languages.registerHoverProvider('razor', modelHoverProvider);
