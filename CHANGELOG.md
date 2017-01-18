@@ -1,3 +1,8 @@
+## 0.5.2
+
+* Fix controllers in areas not found
+* Actions our now exposed with leading *asp-controller*
+
 ## 0.5.1
 
 * Added support for generic action methods

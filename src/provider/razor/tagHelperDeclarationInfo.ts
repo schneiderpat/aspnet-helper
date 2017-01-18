@@ -129,12 +129,16 @@ export default class TagHelperDeclarationInfo {
         let pattern = this._rootDir + path.sep;
         let area = GetParts(this._input, this.currentAreaRegExp);
         let controller = GetParts(this._input, this.currentControllerRegExp);
+        let controllerName: string;
+        if (controller) controllerName = controller[1];
+        if (!controller) controllerName = this.getCurrentController();
+
         // TODO: Add action only routing
-        if (!area && !controller) return '';
+        if (!area && !controllerName) return '';
         if (area) {
-            return pattern + 'Areas' + path.sep + area[1] + path.sep + 'Controllers' + path.sep + controller + 'Controller.cs';
+            return pattern + 'Areas' + path.sep + area[1] + path.sep + 'Controllers' + path.sep + controllerName + 'Controller.cs';
         } else {
-            return pattern + 'Controllers' + path.sep + controller[1] + 'Controller.cs';
+            return pattern + 'Controllers' + path.sep + controllerName + 'Controller.cs';
         }
     }
     
@@ -174,6 +178,13 @@ export default class TagHelperDeclarationInfo {
             items.push(item);
         })
         return items;
+    }
+
+    public getCurrentController(): string {
+        let folderNameRegExp = /.*\/([a-zA-Z]+)$/;
+        let name = folderNameRegExp.exec(path.dirname(this._document.uri.path));
+        if (name) return name[1]
+        return '';
     }
 
     // ----------------------------------------------------------------------------------
