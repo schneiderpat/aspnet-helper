@@ -21,27 +21,33 @@ export default class TagHelperParser implements IParser {
     getItems(): vscode.CompletionList {
         let suggestions = new vscode.CompletionList();
 
-        let areas = this._declarationInfo.testForArea();
-        suggestions.items = suggestions.items.concat(areas.items);
-
-        let controllers = this._declarationInfo.testForController();
-        if (controllers.items.length > 0) {
-            suggestions = new vscode.CompletionList();
-            suggestions.items = suggestions.items.concat(controllers.items);
+        if (this._declarationInfo.userWantsAreas()) {
+            let areaNames = this._declarationInfo.getAreaNames();
+            let areaItems = this._declarationInfo.convertAreaNamesToCompletionItems(areaNames);
+            suggestions.items = suggestions.items.concat(areaItems);
+            return suggestions;
         }
 
-        let actions = this._declarationInfo.testForAction();
-        if (actions.items.length > 0)
-        {
-            suggestions = new vscode.CompletionList();
-            suggestions.items = suggestions.items.concat(actions.items);
+        if (this._declarationInfo.userWantsControllers()) {
+            let controllerNames = this._declarationInfo.getControllerNames();
+            let controllerItems = this._declarationInfo.convertControllerNamesToCompletionItems(controllerNames);
+            suggestions.items = suggestions.items.concat(controllerItems);
+            return suggestions;
         }
 
-        let routeParams = this._declarationInfo.testForRouteParams();
-        if (routeParams.items.length > 0)
-        {
-            suggestions = new vscode.CompletionList();
-            suggestions.items = suggestions.items.concat(routeParams.items);
+        if (this._declarationInfo.userWantsActions()) {
+            let actionResults = this._declarationInfo.getActionResults();
+            let actionItems = this._declarationInfo.convertActionResultToCompletionItems(actionResults);
+            suggestions.items = suggestions.items.concat(actionItems);
+            return suggestions;
+        }
+
+        if (this._declarationInfo.userWantsRouteParams()) {
+            let currentActionResult = this._declarationInfo.getCurrentActionResult();
+            if (!currentActionResult.routeParams) return suggestions
+            let routeItems = this._declarationInfo.convertRouteParamsToCompletionItems(currentActionResult.routeParams);
+            suggestions.items = suggestions.items.concat(routeItems);
+            return suggestions;
         }
 
         return suggestions;
