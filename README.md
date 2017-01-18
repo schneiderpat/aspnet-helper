@@ -32,3 +32,7 @@ IntelliSense while creating anchor tags in your razor page.
 * Controllers must be in *Controllers* folder and named *<Name>Controller.cs*
 * Actions must contain a *HttpGet* attribute
 * Namespaces for used models must be in a *_ViewImports.cshtml* -> only model names in razor page
+
+
+## Found a Bug?
+Please file any issues at https://github.com/schneiderpat/aspnet-helper/issues.
