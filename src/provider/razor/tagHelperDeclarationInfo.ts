@@ -105,8 +105,8 @@ export default class TagHelperDeclarationInfo {
 
     // ----------------------------------------------------------------------------------
 
-    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<[a-zA-Z]+>\s[a-zA-Z]+\(.*\)/g;
-    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s[a-zA-Z]+\s[a-zA-Z]+\(.*\)/g;
+    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<([a-zA-Z]*<?[a-zA-Z]+>?)>\s([a-zA-Z]+)\((.*)\)/g;
+    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)\((.*)\)/g;
     public userWantsActions(): boolean {
         let actionTest = /.*asp-action="[a-zA-Z]*$/
         if (actionTest.test(this._input)) return true
