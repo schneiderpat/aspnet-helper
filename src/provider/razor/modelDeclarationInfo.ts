@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
+import { Property, GetParts } from '../parsingResults';
 
 export default class ModelDeclarationInfo {
 
@@ -19,8 +20,10 @@ export default class ModelDeclarationInfo {
 
     public getCurrentModel(): string {
         let firstLine = this._document.lineAt(0).text;
-        let model = this.getSpecificPart(firstLine, this.modelRegExp);
-        return model;
+        let modelRegExp = /.?model\s(.*)$/
+        let model = GetParts(firstLine, modelRegExp);
+        if (model) return model[1];
+        return '';
     }
 
     public getNamespaces(): string[] {
@@ -51,37 +54,45 @@ export default class ModelDeclarationInfo {
             let text = fs.readFileSync(f, 'utf8');
             let results = text.match(namespaceRegExp);
             results.forEach(r => { 
-                let namespace = this.getSpecificPart(r, namespaceRegExp);
-                if (namespace) namespaces.push(namespace);
+                let namespace = GetParts(r, new RegExp(namespaceRegExp.source));
+                if (namespace) namespaces.push(namespace[1]);
             })
         });
         return namespaces;
     }
 
-    public getProperties(model: string, namespaces: string[]): vscode.CompletionItem[] {
+    public getProperties(model: string, namespaces: string[]): Property[] {
         let matchingFiles: string[] = this.getMatchingFiles(model, namespaces);
         
-        if (matchingFiles.length = 1) {
-            let text = fs.readFileSync(matchingFiles[0], 'utf8');
-            let bodyRegExp = /public\s([a-zA-Z]+<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
-            let body = text.match(bodyRegExp);
-            if (body) {
-                body = body.filter(f => !f.includes('class'));
-                let properties = new Array<vscode.CompletionItem>();
-                body.forEach(b => { 
-                    let propType = this.getSpecificPart(b, this.propRegExp);
-                    let propName = this.getSpecificPart(b, this.propRegExp, 2);
-                    if (propType && propName) {
-                        let item = new vscode.CompletionItem(propName);
-                        item.kind = vscode.CompletionItemKind.Property;
-                        item.detail = propType;
-                        properties.push(item);
-                    }
-                });
-                return properties;
-            }
-        };
-        return [];
+        if (!matchingFiles) return new Array<Property>()
+
+        let text = fs.readFileSync(matchingFiles[0], 'utf8');
+        let propRegExp = /public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
+        let fullProps = text.match(propRegExp);
+        
+        if (!fullProps) return new Array<Property>();
+        
+        fullProps = fullProps.filter(f => !f.includes('class'));
+        let items = new Array<Property>();
+        fullProps.forEach(p => {
+            let results = GetParts(p, new RegExp(propRegExp.source));
+            let item = new Property();
+            item.type = results[1];
+            item.name = results[2];
+            items.push(item);
+        });
+        return items;
+    }
+
+    public convertPropertiesToCompletionItems(properties: Property[]): vscode.CompletionItem[] {
+        let items = new Array<vscode.CompletionItem>();
+        properties.forEach(p => { 
+            let item = new vscode.CompletionItem(p.name);
+            item.kind = vscode.CompletionItemKind.Property;
+            item.detail = p.type;
+            items.push(item);
+        });
+        return items;
     }
 
     private getMatchingFiles(model: string, namespaces: string[]): string[] {
@@ -105,14 +116,6 @@ export default class ModelDeclarationInfo {
         if (namespaceRegExp.test(text) && classNameRegExp.test(text)) return file;
 
         return '';
-    }
-
-    private modelRegExp = /.?model\s(.*)$/
-    private propRegExp = /public\s([a-zA-Z]+<?[a-zA-Z]+>?)\s([a-zA-Z]+)/
-    private getSpecificPart(text: string, regExp: RegExp, part: number = 1): string {
-        if (!regExp.test(text)) return ''
-        let results = regExp.exec(text);
-        return results[part];
     }
 
 }

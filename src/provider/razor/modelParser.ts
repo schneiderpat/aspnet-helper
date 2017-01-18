@@ -30,13 +30,12 @@ export default class ModelParser implements IParser {
 
         let properties = this._declarationInfo.getProperties(model, namespaces);
 
-        if (properties.length != 0) {
-            let suggestions = new vscode.CompletionList();
-            suggestions.items = suggestions.items.concat(properties);
-            return suggestions;
-        }
-
-        return new vscode.CompletionList();
+        if (!properties) return new vscode.CompletionList();
+        
+        let suggestions = new vscode.CompletionList();
+        let items = this._declarationInfo.convertPropertiesToCompletionItems(properties);
+        suggestions.items = suggestions.items.concat(items);
+        return suggestions;
 
     }
 
