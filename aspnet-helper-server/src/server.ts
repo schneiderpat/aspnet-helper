@@ -1,15 +1,12 @@
+'use strict';
+
 import {
-	createConnection, IConnection, ResponseError, InitializeParams, InitializeResult, InitializeError,
-	Diagnostic, DiagnosticSeverity, Files, TextDocuments, TextDocument, ErrorMessageTracker, IPCMessageReader, IPCMessageWriter
+	IPCMessageReader, IPCMessageWriter,
+	createConnection, IConnection, TextDocumentSyncKind,
+	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
+	InitializeParams, InitializeResult, TextDocumentPositionParams,
+	CompletionItem, CompletionItemKind
 } from 'vscode-languageserver';
-
-import fs = require('fs');
-import path = require('path');
-
-import * as minimatch from 'minimatch';
-import * as _ from 'lodash';
-
-import processIgnoreFile = require('parse-gitignore');
 
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
@@ -19,7 +16,6 @@ documents.listen(connection);
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
 	workspaceRoot = params.rootPath;
-	console.log('Razor server startet.')
 	return {
 		capabilities: {
 			textDocumentSync: documents.syncKind,
@@ -33,6 +29,29 @@ connection.onInitialize((params): InitializeResult => {
 documents.onDidChangeContent(change => {
 	console.log('File changed');
 	// validateTextDocument(change.document);
+});
+
+interface Settings {
+	razorServer: ServerSettings; 
+}
+
+interface ServerSettings {
+	maxNumberOfProblems: number;
+}
+
+let maxNumberOfProblems: number;
+
+connection.onDidChangeConfiguration((change) => {
+	let settings = <Settings>change.settings;
+	maxNumberOfProblems = settings.razorServer.maxNumberOfProblems || 100;
+});
+
+connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+	return []
+});
+
+connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
+	return item;
 });
 
 connection.listen();

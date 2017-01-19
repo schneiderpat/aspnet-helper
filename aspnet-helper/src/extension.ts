@@ -27,7 +27,8 @@ export function activate(context: vscode.ExtensionContext) {
     let clientOptions: LanguageClientOptions = {
         documentSelector: ['razor'],
         synchronize: {
-            configurationSection: 'razorServer'
+            configurationSection: 'razorServer',
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
         }
     };
 
