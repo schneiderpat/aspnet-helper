@@ -8,6 +8,10 @@ import {
 	CompletionItem, CompletionItemKind
 } from 'vscode-languageserver';
 
+import {
+	TagHelperParser
+} from './features/tagHelper/tagHelperParser';
+
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
 let documents: TextDocuments = new TextDocuments();
@@ -28,7 +32,7 @@ connection.onInitialize((params): InitializeResult => {
 
 documents.onDidChangeContent(change => {
 	console.log('File changed');
-	// validateTextDocument(change.document);
+	// sTagHelperParser.getCompletionItems
 });
 
 interface Settings {
@@ -47,7 +51,11 @@ connection.onDidChangeConfiguration((change) => {
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-	return []
+	let items = new Array<CompletionItem>();
+	let document = documents.get(textDocumentPosition.textDocument.uri);
+	let tagHelperItems = TagHelperParser.getCompletionItems(textDocumentPosition.position, document, workspaceRoot);
+	if (tagHelperItems) items = items.concat(tagHelperItems);
+	return [];
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {

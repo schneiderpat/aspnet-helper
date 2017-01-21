@@ -10,9 +10,9 @@ import { LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, R
 
 export function activate(context: vscode.ExtensionContext) {
 
-    let tagHelperCompletionItemProvider = new CompletionItemProvider(new TagHelperParser());
+    // let tagHelperCompletionItemProvider = new CompletionItemProvider(new TagHelperParser());
     let modelCompletionItemProvider = new CompletionItemProvider(new ModelParser());
-    vscode.languages.registerCompletionItemProvider('razor', tagHelperCompletionItemProvider, '"');
+    // vscode.languages.registerCompletionItemProvider('razor', tagHelperCompletionItemProvider, '"');
     vscode.languages.registerCompletionItemProvider('razor', modelCompletionItemProvider, '.');
 
     let modelHoverProvider = new HoverProvider(new ModelParser());
