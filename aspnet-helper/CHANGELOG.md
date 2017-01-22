@@ -1,3 +1,7 @@
+## 0.5.4
+
+* Text fixes
+
 ## 0.5.3
 
 * Fix model parser not working 

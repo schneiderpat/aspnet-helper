@@ -14,13 +14,13 @@ Just type **@Model.** and you will get suggestions.
 
 At the moment there should be just one class per file.
 
-![](https://raw.githubusercontent.com/schneiderpat/aspnet-helper/master/images/ModelDemo.gif)
+![](https://raw.githubusercontent.com/schneiderpat/aspnet-helper/master/aspnet-helper/images/ModelDemo.gif)
 
 ### Links
 
 IntelliSense while creating anchor tags in your razor page.
 
-![](https://raw.githubusercontent.com/schneiderpat/aspnet-helper/master/images/IntelliSenseDemo.gif)
+![](https://raw.githubusercontent.com/schneiderpat/aspnet-helper/master/aspnet-helper/images/IntelliSenseDemo.gif)
 
 ---
 
