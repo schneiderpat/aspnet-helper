@@ -9,7 +9,6 @@ import Uri from 'vscode-uri';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
-import * as queryString from 'querystring';
 
 import { 
     ActionResult, Property, GetParts 
@@ -26,10 +25,10 @@ export default class TagHelperDeclarationInfo {
         this._document = document;
         this._position = position;
         this.getRootPath();
-        this.getInput();
+        this.setInput();
     }
 
-    private getInput() {
+    private setInput() {
         let lines = this._document.getText().split(/\r?\n/g);
         this._input = lines[this._position.line].substr(0, this._position.character);
     }
@@ -115,7 +114,7 @@ export default class TagHelperDeclarationInfo {
         if (area) {
             pattern += 'Areas' + path.sep + area + path.sep + "Controllers" + path.sep + '*Controller.cs';
         } else {
-            pattern += "Controllers" + path.sep + path.sep + '*Controller.cs';
+            pattern += "Controllers" + path.sep + '*Controller.cs';
         }
         let files = glob.sync(pattern);
         if (files) return files

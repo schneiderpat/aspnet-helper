@@ -6,12 +6,11 @@ import {
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
 	InitializeParams, InitializeResult, TextDocumentPositionParams,
 	CompletionItem, CompletionItemKind,
-	Files
+	Files, Hover
 } from 'vscode-languageserver';
 
-import {
-	TagHelperParser
-} from './features/tagHelper/tagHelperParser';
+import { TagHelperParser } from './features/tagHelper/tagHelperParser';
+import { ModelParser } from './features/model/modelParser';
 
 let connection: IConnection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
 
@@ -24,8 +23,10 @@ connection.onInitialize((params): InitializeResult => {
 		capabilities: {
 			textDocumentSync: documents.syncKind,
 			completionProvider: {
-				resolveProvider: true
-			}
+				resolveProvider: true,
+				triggerCharacters: [ '.' , '"' ]
+			},
+			hoverProvider: true
 		}
 	}
 });
@@ -50,11 +51,23 @@ connection.onDidChangeConfiguration((change) => {
 	maxNumberOfProblems = settings.razorServer.maxNumberOfProblems || 100;
 });
 
+connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => {
+	let document = documents.get(textDocumentPosition.textDocument.uri);
+	let hoverResult = ModelParser.getHoverResult(textDocumentPosition.position, document, workspaceRoot);
+	if (hoverResult) return hoverResult
+
+	return null;
+});
+
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 	let items = new Array<CompletionItem>();
 	let document = documents.get(textDocumentPosition.textDocument.uri);
+
 	let tagHelperItems = TagHelperParser.getCompletionItems(textDocumentPosition.position, document, workspaceRoot);
 	if (tagHelperItems) items = items.concat(tagHelperItems);
+
+	let modelItems = ModelParser.getCompletionItems(textDocumentPosition.position, document, workspaceRoot);
+	if (modelItems) items = items.concat(modelItems);
 	
 	return items;
 });

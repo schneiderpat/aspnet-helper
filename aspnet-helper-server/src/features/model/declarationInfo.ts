@@ -1,31 +1,79 @@
-import * as vscode from 'vscode';
+import {
+    CompletionItem, CompletionItemKind,
+    Files, Hover,
+    MarkedString,
+    Position, Range, 
+    TextDocument, TextEdit
+} from 'vscode-languageserver';
+import Uri from 'vscode-uri';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as glob from 'glob';
-import { Property, GetParts } from '../parsingResults';
+
+import { 
+    ActionResult, Property, GetParts 
+} from '../parsingResults';
 
 export default class ModelDeclarationInfo {
 
-    private _document: vscode.TextDocument;
+    private _document: TextDocument
+    private _rootDir: string;
+    private _position: Position;
+    public input: string;
     
-    constructor(document: vscode.TextDocument) {
+    constructor(position: Position, document: TextDocument, workspaceRoot: string) {
         this._document = document;
+        this._position = position;
+        this.getRootPath();
+        this.setInput();
     }
 
-    public userWantsProperties(input: string): boolean {
+    private setInput() {
+        let lines = this._document.getText().split(/\r?\n/g);
+        this.input = lines[this._position.line].substr(0, this._position.character);
+    }
+
+    private getCurrentLine(): string {
+        let lines = this._document.getText().split(/\r?\n/g);
+        return lines[this._position.line];
+    }
+
+    public getWordAtPosition() {
+        let left = this.input.slice(0, this._position.character + 1).search(/\S+$/);
+        let right = this.input.slice(this._position.character).search(/\s/);
+        let line = this.getCurrentLine();
+        if (right < 0) return line.slice(left);
+        return line.slice(left, right + this._position.character);
+    }
+
+    private getRootPath() {
+        let currentDir = Files.uriToFilePath(this._document.uri);
+
+        while (currentDir !== this._rootDir) {
+            currentDir = path.dirname(currentDir);
+            fs.readdirSync(currentDir).forEach(f => {
+                if (f.includes('project.json') || f.includes('csproj')) {
+                    this._rootDir = currentDir;
+                    return;
+                } 
+            });
+        }
+    }
+
+    public userWantsProperties(): boolean {
         let userRegExp = /.*@Model\.?$/;
-        if (userRegExp.test(input)) return true;
+        if (userRegExp.test(this.input)) return true;
         return false
     }
 
-    public userWantsSingleProperty(input: string): boolean {
+    public userWantsSingleProperty(): boolean {
         let userRegExp = /.*@Model\.[a-zA-Z]*$/;
-        if (userRegExp.test(input)) return true;
+        if (userRegExp.test(this.input)) return true;
         return false
     }
 
     public getCurrentModel(): string {
-        let firstLine = this._document.lineAt(0).text;
+        let firstLine = this._document.getText().split(/\r?\n/g)[0];
         let modelRegExp = /.?model\s(.*)$/
         let model = GetParts(firstLine, modelRegExp);
         if (model) return model[1];
@@ -40,10 +88,10 @@ export default class ModelDeclarationInfo {
     }
 
     private getViewImportsFiles(): string[] {
-        let currentDir = this._document.uri.fsPath;
+        let currentDir = Files.uriToFilePath(this._document.uri);
         let files: string[] = [];
 
-        while (currentDir !== vscode.workspace.rootPath) {
+        while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
                 if (f.includes('_ViewImports.cshtml')) files.push(currentDir + path.sep + f);
@@ -90,30 +138,34 @@ export default class ModelDeclarationInfo {
         return items;
     }
 
-    public convertPropertiesToCompletionItems(properties: Property[]): vscode.CompletionItem[] {
-        let items = new Array<vscode.CompletionItem>();
+    public convertPropertiesToCompletionItems(properties: Property[]): CompletionItem[] {
+        let items = new Array<CompletionItem>();
         properties.forEach(p => { 
-            let item = new vscode.CompletionItem(p.name);
-            item.kind = vscode.CompletionItemKind.Property;
+            let item = CompletionItem.create(p.name);
+            item.kind = CompletionItemKind.Property;
             item.detail = p.type;
             items.push(item);
         });
         return items;
     }
 
-    public convertPropertiesToHoverResult(property:Property): vscode.Hover {
+    public convertPropertiesToHoverResult(property:Property): Hover {
         let text = property.type + ' ' + property.name;
-        let markedString: vscode.MarkedString;
+        let markedString: MarkedString;
         markedString = {
             language: 'csharp',
             value: text
         };
-        return new vscode.Hover(markedString);
+        let hover: Hover;
+        hover = {
+            contents: markedString
+        };
+        return hover;
     }
 
     private getMatchingFiles(model: string, namespaces: string[]): string[] {
-        let modelsPattern = vscode.workspace.rootPath + path.sep + '**\\Models\\**\\*.cs';
-        let viewModelsPattern = vscode.workspace.rootPath + path.sep + '**\\ViewModels\\**\\*.cs';
+        let modelsPattern = this._rootDir + path.sep + '**' + path.sep + 'Models' + path.sep + '**' + path.sep + '*.cs';
+        let viewModelsPattern = this._rootDir + path.sep + '**' + path.sep + 'ViewModels' + path.sep + '**' + path.sep + '*.cs';
         let files = glob.sync(modelsPattern).concat(glob.sync(viewModelsPattern));
         let matchingFiles: string[] = [];
         namespaces.forEach(n => {

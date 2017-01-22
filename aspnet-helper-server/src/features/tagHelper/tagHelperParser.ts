@@ -1,9 +1,8 @@
 'use strict';
 
 import { 
-    CompletionItem, CompletionItemKind,
-    Position,
-    TextDocumentPositionParams, TextDocument
+    CompletionItem,
+    Position, TextDocument
 } from 'vscode-languageserver';
 
 import DeclarationInfo from './declarationInfo';
