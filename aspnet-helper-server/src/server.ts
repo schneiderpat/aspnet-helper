@@ -5,7 +5,8 @@ import {
 	createConnection, IConnection, TextDocumentSyncKind,
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
 	InitializeParams, InitializeResult, TextDocumentPositionParams,
-	CompletionItem, CompletionItemKind
+	CompletionItem, CompletionItemKind,
+	Files
 } from 'vscode-languageserver';
 
 import {
@@ -16,7 +17,6 @@ let connection: IConnection = createConnection(new IPCMessageReader(process), ne
 
 let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
-
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
 	workspaceRoot = params.rootPath;
@@ -55,7 +55,8 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 	let document = documents.get(textDocumentPosition.textDocument.uri);
 	let tagHelperItems = TagHelperParser.getCompletionItems(textDocumentPosition.position, document, workspaceRoot);
 	if (tagHelperItems) items = items.concat(tagHelperItems);
-	return [];
+	
+	return items;
 });
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {

@@ -1,5 +1,6 @@
 import {
     CompletionItem, CompletionItemKind,
+    Files,
     Position, Range, 
     TextDocument, TextEdit,
     TextDocumentPositionParams
@@ -16,20 +17,25 @@ import {
 
 export default class TagHelperDeclarationInfo {
 
-    private _documentPath: string
+    private _document: TextDocument
     private _input: string;
     private _rootDir: string;
     private _position: Position;
 
     constructor(position: Position, document: TextDocument, workspaceRoot: string) {
-        this._documentPath = Uri.parse(document.uri).path;
+        this._document = document;
         this._position = position;
-        this._rootDir = workspaceRoot;
         this.getRootPath();
+        this.getInput();
+    }
+
+    private getInput() {
+        let lines = this._document.getText().split(/\r?\n/g);
+        this._input = lines[this._position.line].substr(0, this._position.character);
     }
 
     private getRootPath() {
-        let currentDir = this._documentPath;
+        let currentDir = Files.uriToFilePath(this._document.uri);
 
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
@@ -60,8 +66,7 @@ export default class TagHelperDeclarationInfo {
     public convertAreaNamesToCompletionItems(areas: string[]): CompletionItem[] {
         let items = new Array<CompletionItem>();
         areas.forEach(a => {
-            let item: CompletionItem;
-            item.label = a;
+            let item = CompletionItem.create(a);
             items.push(item);
         });
         return items;
@@ -98,8 +103,7 @@ export default class TagHelperDeclarationInfo {
     public convertControllerNamesToCompletionItems(controllers: string[]): CompletionItem[] {
         let items = new Array<CompletionItem>();
         controllers.forEach(c => {
-            let item: CompletionItem;
-            item.label = c;
+            let item = CompletionItem.create(c);
             item.kind = CompletionItemKind.Class;
             items.push(item);
         });
@@ -174,27 +178,19 @@ export default class TagHelperDeclarationInfo {
     public convertActionResultToCompletionItems(actionResults: ActionResult[]): CompletionItem[] {
         let items = new Array<CompletionItem>();
         actionResults.forEach(a => {
-            let item: CompletionItem = {
-                label: a.name,
-                kind: CompletionItemKind.Method,
-                detail: a.type
-            };
+            let item = CompletionItem.create(a.name);
+            item.kind = CompletionItemKind.Method;
+            item.detail = a.type;
             if (a.routeParams) {
                 item.documentation = 'Found route parameter:\n';
-                let position: Position = {
-                    line: this._position.line, 
-                    character: this._position.character + 1
-                }
+                let position = Position.create(this._position.line, this._position.character + 1);
                 let newText = ' ';
                 a.routeParams.forEach((r) => {
                     item.documentation += r.type + ' ' + r.name + '\n';
                     newText += 'asp-route-' + r.name + '="" ';
                 });
                 item.additionalTextEdits = new Array<TextEdit>();
-                let textEdit: TextEdit = {
-                    range: Range.create(position, position),
-                    newText: newText
-                };
+                let textEdit = TextEdit.insert(position, newText);
                 item.additionalTextEdits.push(textEdit);
             }
             items.push(item);
@@ -204,7 +200,7 @@ export default class TagHelperDeclarationInfo {
 
     public getCurrentController(): string {
         let folderNameRegExp = /.*\/([a-zA-Z]+)$/;
-        let name = folderNameRegExp.exec(path.dirname(this._documentPath));
+        let name = folderNameRegExp.exec(path.dirname(Files.uriToFilePath(this._document.uri)));
         if (name) return name[1]
         return '';
     }
