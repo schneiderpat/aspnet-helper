@@ -8,7 +8,7 @@ This extension parses your project to enable IntelliSense for Razor pages within
 ### Models
 
 The *@Model* declaration now shows which properties your class exposes.
-Just type **@Model.** and **Ctrl+Space** and you will get suggestions.
+Just type **@Model.** and you will get suggestions.
 
 > NOTE! There is no refactoring or other advanced things! I'm working on that feature in future releases!
 
