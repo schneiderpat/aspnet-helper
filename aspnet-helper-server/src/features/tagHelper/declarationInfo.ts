@@ -198,7 +198,7 @@ export default class TagHelperDeclarationInfo {
     }
 
     public getCurrentController(): string {
-        let folderNameRegExp = /.*\/([a-zA-Z]+)$/;
+        let folderNameRegExp = new RegExp('.*\\' + path.sep + '([a-zA-Z]+)$');
         let name = folderNameRegExp.exec(path.dirname(Files.uriToFilePath(this._document.uri)));
         if (name) return name[1]
         return '';

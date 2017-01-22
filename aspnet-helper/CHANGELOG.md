@@ -1,7 +1,11 @@
+## 0.5.3
+
+* Fix model parser not working 
+
 ## 0.5.2
 
 * Fix controllers in areas not found
-* Actions our now exposed with leading *asp-controller*
+* Actions are now exposed without leading *asp-controller*
 
 ## 0.5.1
 
