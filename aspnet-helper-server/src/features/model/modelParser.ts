@@ -83,7 +83,7 @@ export class ModelParser {
                 let error: Diagnostic = {
                     message: u.property + ' is not a property of ' + model,
                     severity: DiagnosticSeverity.Error,
-                    source: 'aspnet-helper',
+                    source: 'ASP.NET Helper',
                     range: u.range
                 }
                 diagnostics.push(error);
