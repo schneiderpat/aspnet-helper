@@ -1,5 +1,9 @@
 'use strict';
 
+import {
+    Range
+} from 'vscode-languageserver';
+
 export class ActionResult {
     private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<([a-zA-Z]*<?[a-zA-Z]+>?)>\s([a-zA-Z]+)\((.*)\)/;
     private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)\((.*)\)/;
@@ -49,6 +53,11 @@ export enum TagHelperRegExp {
 export class Property {
     public name: string;
     public type: string;
+}
+
+export class PropertyPosition {
+    public property: string;
+    public range: Range;
 }
 
 export function GetParts(text: string, regExp: RegExp): RegExpExecArray {
