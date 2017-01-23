@@ -190,7 +190,7 @@ export default class ModelDeclarationInfo {
 
     public getAllUsedPropertiesInFile(): PropertyPosition[] {
         let items = new Array<PropertyPosition>();
-        let propertyRegExp = /.*@Model\.([a-zA-Z]+).*/g;
+        let propertyRegExp = /.*@Model\.([a-zA-Z]*)/g;
         let lines = this._document.getText().split(/\r?\n/g);
         if (!lines) return [];
 
