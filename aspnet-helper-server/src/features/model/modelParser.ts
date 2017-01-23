@@ -1,7 +1,8 @@
 'use strict';
 
 import { 
-    CompletionItem,
+    CompletionItem, Diagnostic,
+    DiagnosticSeverity, Hover,
     Position, TextDocument
 } from 'vscode-languageserver';
 
@@ -11,7 +12,7 @@ export class ModelParser {
 
     static getCompletionItems(position: Position, document: TextDocument, workspaceRoot: string): CompletionItem[] {
 
-        let declarationInfo = new DeclarationInfo(position, document, workspaceRoot)
+        let declarationInfo = new DeclarationInfo(document, workspaceRoot, position)
         let userWantsSuggestions = declarationInfo.userWantsProperties();
         if (!userWantsSuggestions) return new Array<CompletionItem>();
 
@@ -32,9 +33,9 @@ export class ModelParser {
 
     }
 
-    static getHoverResult(position: Position, document: TextDocument, workspaceRoot: string) {
+    static getHoverResult(position: Position, document: TextDocument, workspaceRoot: string): Hover {
 
-        let declarationInfo = new DeclarationInfo(position, document, workspaceRoot);
+        let declarationInfo = new DeclarationInfo(document, workspaceRoot, position);
 
         let userWantsSingleProperty = declarationInfo.userWantsSingleProperty();
 
@@ -55,6 +56,42 @@ export class ModelParser {
         let hover = declarationInfo.convertPropertiesToHoverResult(properties[0]);
         return hover;
 
+    }
+
+    static getModelErrors(document: TextDocument, workspaceRoot: string): Diagnostic[] {
+
+        let declarationInfo = new DeclarationInfo(document, workspaceRoot);
+
+        let model = declarationInfo.getCurrentModel();
+
+        if (!model) return;
+
+        let namespaces = declarationInfo.getNamespaces();
+
+        let properties = declarationInfo.getProperties(model, namespaces);
+        if (!properties) return;
+        
+        let usedProperties = declarationInfo.getAllUsedPropertiesInFile();
+        if (!usedProperties) return;
+
+        let diagnostics: Diagnostic[] = [];
+
+        usedProperties.forEach(u => {
+            let isOkay = properties.find(p => { return p.name === u.property });
+
+            if (!isOkay) {
+                let error: Diagnostic = {
+                    message: u.property + ' is not a property of ' + model,
+                    severity: DiagnosticSeverity.Error,
+                    source: 'ASP.NET Helper',
+                    range: u.range
+                }
+                diagnostics.push(error);
+            }
+
+        });
+
+        return diagnostics;
     }
 
 }

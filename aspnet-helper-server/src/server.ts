@@ -5,9 +5,11 @@ import {
 	createConnection, IConnection, TextDocumentSyncKind,
 	TextDocuments, TextDocument, Diagnostic, DiagnosticSeverity,
 	InitializeParams, InitializeResult, TextDocumentPositionParams,
-	CompletionItem, CompletionItemKind,
-	Files, Hover
+	CompletionItem, Hover, DidChangeTextDocumentParams,
+	PublishDiagnosticsParams, DidOpenTextDocumentParams,
+	DidSaveTextDocumentParams
 } from 'vscode-languageserver';
+import Uri from 'vscode-uri';
 
 import { TagHelperParser } from './features/tagHelper/tagHelperParser';
 import { ModelParser } from './features/model/modelParser';
@@ -29,11 +31,6 @@ connection.onInitialize((params): InitializeResult => {
 			hoverProvider: true
 		}
 	}
-});
-
-documents.onDidChangeContent(change => {
-	console.log('File changed');
-	// sTagHelperParser.getCompletionItems
 });
 
 interface Settings {
@@ -74,6 +71,15 @@ connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): Comp
 
 connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 	return item;
+});
+
+documents.onDidChangeContent((change) => {
+	let errors = ModelParser.getModelErrors(change.document, workspaceRoot);
+	let publishErrors: PublishDiagnosticsParams = {
+		diagnostics: errors,
+		uri: change.document.uri
+	};
+	connection.sendDiagnostics(publishErrors);
 });
 
 connection.listen();

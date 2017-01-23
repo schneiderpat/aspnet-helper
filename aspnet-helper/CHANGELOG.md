@@ -1,3 +1,7 @@
+## 0.6.0
+
+* View now shows errors if your model changed or you misspelled a property
+
 ## 0.5.4
 
 * Text fixes

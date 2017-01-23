@@ -11,7 +11,7 @@ import * as path from 'path';
 import * as glob from 'glob';
 
 import { 
-    ActionResult, Property, GetParts 
+    ActionResult, Property, GetParts , PropertyPosition
 } from '../parsingResults';
 
 export default class ModelDeclarationInfo {
@@ -21,11 +21,13 @@ export default class ModelDeclarationInfo {
     private _position: Position;
     public input: string;
     
-    constructor(position: Position, document: TextDocument, workspaceRoot: string) {
+    constructor(document: TextDocument, workspaceRoot: string, position?: Position) {
         this._document = document;
-        this._position = position;
         this.getRootPath();
-        this.setInput();
+        if (position) {
+            this._position = position;
+            this.setInput();
+        }
     }
 
     private setInput() {
@@ -184,6 +186,27 @@ export default class ModelDeclarationInfo {
         if (namespaceRegExp.test(text) && classNameRegExp.test(text)) return file;
 
         return '';
+    }
+
+    public getAllUsedPropertiesInFile(): PropertyPosition[] {
+        let items = new Array<PropertyPosition>();
+        let propertyRegExp = /.*@Model\.([a-zA-Z]*)/g;
+        let lines = this._document.getText().split(/\r?\n/g);
+        if (!lines) return [];
+
+        lines.forEach((line, i) => {
+            let result: RegExpExecArray;
+            while ( (result = propertyRegExp.exec(line)) ) {
+                let item = new PropertyPosition();
+                item.property = result[1];
+
+                let start = Position.create(i, result.index);
+                let end = Position.create(i, result.index + result[0].length);
+                item.range = Range.create(start, end);
+                items.push(item);
+            }
+        });
+        return items;
     }
 
 }
