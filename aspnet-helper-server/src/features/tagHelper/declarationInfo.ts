@@ -46,13 +46,40 @@ export default class TagHelperDeclarationInfo {
             });
         }
     }
+
+    // ----------------------------------------------------------------------------------
+
+    public userWantsAspNet(): boolean {
+        let aspnetTest = /.*<a.*asp-$/;
+        if (aspnetTest.test(this._input)) return true
+        return false;
+    }
+
+    public getAspNetAttr(): string[] {
+        let items: string[] = [
+            "asp-area",
+            "asp-controller"
+        ];
+        return items;
+    }
+
+    public convertAspNetAttrToCompletionItems(attr: string[]): CompletionItem[] {
+        let items = new Array<CompletionItem>();
+        attr.forEach(a => {
+            let item = CompletionItem.create(a);
+            item.insertText = a.split('-')[1] + '=""';
+            item.kind = CompletionItemKind.Property;
+            items.push(item);
+        });
+        return items;
+    }
     
     // ----------------------------------------------------------------------------------
 
     public userWantsAreas(): boolean {
         let areaTest = /.*asp-area="\w*$/;
         if (areaTest.test(this._input)) return true
-        return false
+        return false;
     }
 
     public getAreaNames(): string[] {

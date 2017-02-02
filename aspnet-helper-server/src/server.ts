@@ -26,7 +26,7 @@ connection.onInitialize((params): InitializeResult => {
 			textDocumentSync: documents.syncKind,
 			completionProvider: {
 				resolveProvider: true,
-				triggerCharacters: [ '.' , '"' ]
+				triggerCharacters: [ '.' , '"', '-' ]
 			},
 			hoverProvider: true
 		}
