@@ -69,7 +69,7 @@ export default class ModelDeclarationInfo {
     }
 
     public userWantsSingleProperty(): boolean {
-        let userRegExp = /.*@Model\.[a-zA-Z]*$/;
+        let userRegExp = /.*@Model\.\w*$/;
         if (userRegExp.test(this.input)) return true;
         return false
     }
@@ -123,7 +123,7 @@ export default class ModelDeclarationInfo {
         if (!matchingFiles) return new Array<Property>()
 
         let text = fs.readFileSync(matchingFiles[0], 'utf8');
-        let propRegExp = /public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
+        let propRegExp = /public\s(\w*<?\w+>?)\s(\w+)/g;
         let fullProps = text.match(propRegExp);
         
         if (!fullProps) return new Array<Property>();
@@ -190,7 +190,7 @@ export default class ModelDeclarationInfo {
 
     public getAllUsedPropertiesInFile(): PropertyPosition[] {
         let items = new Array<PropertyPosition>();
-        let propertyRegExp = /.*@Model\.([a-zA-Z]*)/g;
+        let propertyRegExp = /.*@Model\.(\w*)/g;
         let lines = this._document.getText().split(/\r?\n/g);
         if (!lines) return [];
 

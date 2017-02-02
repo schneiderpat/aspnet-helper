@@ -50,7 +50,7 @@ export default class TagHelperDeclarationInfo {
     // ----------------------------------------------------------------------------------
 
     public userWantsAreas(): boolean {
-        let areaTest = /.*asp-area="[a-zA-Z]*$/;
+        let areaTest = /.*asp-area="\w*$/;
         if (areaTest.test(this._input)) return true
         return false
     }
@@ -82,7 +82,7 @@ export default class TagHelperDeclarationInfo {
     // ----------------------------------------------------------------------------------
 
     public userWantsControllers(): boolean {
-        let controllerTest = /.*asp-controller="[a-zA-Z]*$/
+        let controllerTest = /.*asp-controller="\w*$/
         if (controllerTest.test(this._input)) return true;
         return false;
     }
@@ -122,10 +122,10 @@ export default class TagHelperDeclarationInfo {
 
     // ----------------------------------------------------------------------------------
 
-    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<([a-zA-Z]*<?[a-zA-Z]+>?)>\s([a-zA-Z]+)\((.*)\)/g;
-    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)\((.*)\)/g;
+    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<(\w*<?\w+>?)>\s(\w+)\((.*)\)/g;
+    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s(\w*<?\w+>?)\s(\w+)\((.*)\)/g;
     public userWantsActions(): boolean {
-        let actionTest = /.*asp-action="[a-zA-Z]*$/
+        let actionTest = /.*asp-action="\w*$/
         if (actionTest.test(this._input)) return true
         return false
     }
@@ -198,7 +198,7 @@ export default class TagHelperDeclarationInfo {
     }
 
     public getCurrentController(): string {
-        let folderNameRegExp = new RegExp('.*\\' + path.sep + '([a-zA-Z]+)$');
+        let folderNameRegExp = new RegExp('.*\\' + path.sep + '(\w+)$');
         let name = folderNameRegExp.exec(path.dirname(Files.uriToFilePath(this._document.uri)));
         if (name) return name[1]
         return '';
@@ -207,7 +207,7 @@ export default class TagHelperDeclarationInfo {
     // ----------------------------------------------------------------------------------
 
     public userWantsRouteParams(): boolean {
-        let routeParamsTest = /.*asp-route-[a-zA-Z]*$/;
+        let routeParamsTest = /.*asp-route-\w*$/;
         if (routeParamsTest.test(this._input)) return true
         return false
     }
@@ -237,18 +237,18 @@ export default class TagHelperDeclarationInfo {
     // }
 
     public getCurrentAction(): string {
-        let actionTest = /asp-action="([a-zA-Z]+)"/;
+        let actionTest = /asp-action="(\w+)"/;
         let action = GetParts(this._input, actionTest);
         if (!action) return '';
         return action[1];
     }
 
     // Get specfic part of a text
-    private currentAreaRegExp: RegExp = /.*asp-area="([a-zA-Z]+)".?/;
-    private currentControllerRegExp: RegExp = /.*asp-controller="([a-zA-Z]+)".?/;
-    private currentActionRegExp: RegExp = /.*asp-action="([a-zA-Z]+)".?/;
-    private controllerNameRegExp = /([a-zA-Z]+)Controller\.cs/;
-    private actionNameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
+    private currentAreaRegExp: RegExp = /.*asp-area="(\w+)".?/;
+    private currentControllerRegExp: RegExp = /.*asp-controller="(\w+)".?/;
+    private currentActionRegExp: RegExp = /.*asp-action="(\w+)".?/;
+    private controllerNameRegExp = /(\w+)Controller\.cs/;
+    private actionNameRegExp = /.?\s(\w+)\(.*\)/;
 
     private getSpecificPart(text: string, regExp: RegExp, part: number = 1): string {
         if (!regExp.test(text)) return ''
