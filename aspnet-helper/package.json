@@ -27,7 +27,7 @@
         "vscode": "^1.8.0"
     },
     "categories": [
-        "Other"
+        "Other, Snippets"
     ],
     "activationEvents": [
         "*"
@@ -54,7 +54,13 @@
                     "description": "Traces the communication between VSCode and the languageServerExample service."
                 }
             }
-        }
+        },
+        "snippets": [
+            {
+                "language": "razor",
+                "path": "./snippets/razor.json"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "cd ../aspnet-helper-server && npm run compile && cd ../aspnet-helper && tsc -p ./",
