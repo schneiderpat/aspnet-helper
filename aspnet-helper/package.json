@@ -2,7 +2,7 @@
     "name": "aspnet-helper",
     "displayName": "ASP.NET Helper",
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "publisher": "schneiderpat",
     "keywords": [
         "C#",
@@ -24,10 +24,11 @@
     },
     "license": "MIT",
     "engines": {
-        "vscode": "^1.8.0"
+        "vscode": "^1.9.1"
     },
     "categories": [
-        "Other, Snippets"
+        "Other", 
+        "Snippets"
     ],
     "activationEvents": [
         "*"
@@ -78,6 +79,6 @@
     },
     "dependencies": {
         "glob": "^7.1.1",
-        "vscode-languageclient": "^2.6.3"
+        "vscode-languageclient": "^3.0.4"
     }
 }

@@ -79,7 +79,9 @@ documents.onDidChangeContent((change) => {
 		diagnostics: errors,
 		uri: change.document.uri
 	};
-	connection.sendDiagnostics(publishErrors);
+	if (publishErrors) {
+		connection.sendDiagnostics(publishErrors);
+	}
 });
 
 connection.listen();
