@@ -50,12 +50,12 @@ export default class ModelDeclarationInfo {
 
     private getRootPath() {
         let currentDir = Files.uriToFilePath(this._document.uri);
-
+        if (!currentDir) return
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
                 if (f.includes('project.json') || f.includes('csproj')) {
-                    this._rootDir = currentDir;
+                    if (currentDir) this._rootDir = currentDir;
                     return;
                 } 
             });
@@ -91,8 +91,9 @@ export default class ModelDeclarationInfo {
 
     private getViewImportsFiles(): string[] {
         let currentDir = Files.uriToFilePath(this._document.uri);
+        if (!currentDir) return [];        
+        
         let files: string[] = [];
-
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
@@ -109,10 +110,12 @@ export default class ModelDeclarationInfo {
         files.forEach(f => {
             let text = fs.readFileSync(f, 'utf8');
             let results = text.match(namespaceRegExp);
-            results.forEach(r => { 
-                let namespace = GetParts(r, new RegExp(namespaceRegExp.source));
-                if (namespace) namespaces.push(namespace[1]);
-            })
+            if (results) {
+                results.forEach(r => { 
+                    let namespace = GetParts(r, new RegExp(namespaceRegExp.source));
+                    if (namespace) namespaces.push(namespace[1]);
+                })
+            }
         });
         return namespaces;
     }
@@ -132,6 +135,7 @@ export default class ModelDeclarationInfo {
         let items = new Array<Property>();
         fullProps.forEach(p => {
             let results = GetParts(p, new RegExp(propRegExp.source));
+            if (!results) return;
             let item = new Property();
             item.type = results[1];
             item.name = results[2];
@@ -195,7 +199,7 @@ export default class ModelDeclarationInfo {
         if (!lines) return [];
 
         lines.forEach((line, i) => {
-            let result: RegExpExecArray;
+            let result: RegExpExecArray | null;
             while ( (result = propertyRegExp.exec(line)) ) {
                 let item = new PropertyPosition();
                 item.property = result[1];

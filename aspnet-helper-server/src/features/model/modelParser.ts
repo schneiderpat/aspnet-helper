@@ -33,32 +33,32 @@ export class ModelParser {
 
     }
 
-    static getHoverResult(position: Position, document: TextDocument, workspaceRoot: string): Hover {
+    static getHoverResult(position: Position, document: TextDocument, workspaceRoot: string): Hover | undefined {
 
         let declarationInfo = new DeclarationInfo(document, workspaceRoot, position);
 
         let userWantsSingleProperty = declarationInfo.userWantsSingleProperty();
-
         if (!userWantsSingleProperty) return;
 
         let model = declarationInfo.getCurrentModel();
 
         if (!model) return;
-
         let namespaces = declarationInfo.getNamespaces();
 
+        if (!model || !namespaces) return
         let properties = declarationInfo.getProperties(model, namespaces);
 
         if (!properties) return;
         let word = declarationInfo.getWordAtPosition();
         properties = properties.filter(p => { return word.split('.')[1] === p.name })
         if (!properties) return;
+        
         let hover = declarationInfo.convertPropertiesToHoverResult(properties[0]);
         return hover;
 
     }
 
-    static getModelErrors(document: TextDocument, workspaceRoot: string): Diagnostic[] {
+    static getModelErrors(document: TextDocument, workspaceRoot: string): Diagnostic[] | undefined {
 
         let declarationInfo = new DeclarationInfo(document, workspaceRoot);
 

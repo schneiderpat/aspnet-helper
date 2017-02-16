@@ -3,6 +3,7 @@
         "module": "commonjs",
         "target": "es6",
         "moduleResolution": "node",
+        "strictNullChecks": true,
         "sourceMap": true,
         "lib": [
             "es2016"

@@ -35,12 +35,13 @@ export default class TagHelperDeclarationInfo {
 
     private getRootPath() {
         let currentDir = Files.uriToFilePath(this._document.uri);
+        if (!currentDir) return;
 
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
                 if (f.includes('project.json') || f.includes('csproj')) {
-                    this._rootDir = currentDir;
+                    if (currentDir) this._rootDir = currentDir;
                     return;
                 } 
             });
@@ -85,6 +86,7 @@ export default class TagHelperDeclarationInfo {
     public getAreaNames(): string[] {
         let areaNames: string[] = [];
         let directories = this.getAreaDirectories();
+        if (!directories) return areaNames;
         directories.forEach((d) => { areaNames.push(d) });
         return areaNames;
     }
@@ -100,6 +102,8 @@ export default class TagHelperDeclarationInfo {
 
     private getAreaDirectories(): string[] {
         let areaDir = this._rootDir + path.sep + 'Areas' + path.sep;
+        if (!fs.existsSync(areaDir)) return [];
+        
         let directories = fs.readdirSync(areaDir).filter((file) => {
             return fs.statSync(path.join(areaDir, file)).isDirectory();
         });
@@ -117,7 +121,6 @@ export default class TagHelperDeclarationInfo {
     public getControllerNames(): string[] {
         let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
         let files = this.getControllerFiles(area);
-
         let controllerNames: string[] = [];
         files.forEach((f) => { 
             let controllerName = this.getSpecificPart(f, this.controllerNameRegExp);
@@ -145,6 +148,7 @@ export default class TagHelperDeclarationInfo {
         }
         let files = glob.sync(pattern);
         if (files) return files
+        return [];
     }
 
     // ----------------------------------------------------------------------------------
@@ -173,7 +177,7 @@ export default class TagHelperDeclarationInfo {
         let pattern = this._rootDir + path.sep;
         let area = GetParts(this._input, this.currentAreaRegExp);
         let controller = GetParts(this._input, this.currentControllerRegExp);
-        let controllerName: string;
+        let controllerName: string = '';
         if (controller) controllerName = controller[1];
         if (!controller) controllerName = this.getCurrentController();
 
@@ -189,6 +193,8 @@ export default class TagHelperDeclarationInfo {
     private getActionMethods(): string[] {
         let pattern = this.getControllerPath();
         if (!pattern) return [];
+        if (!fs.existsSync(pattern)) return [];
+        
         let file = fs.readFileSync(pattern, 'utf8');
         let actions: string[] = [];
         
@@ -226,7 +232,9 @@ export default class TagHelperDeclarationInfo {
 
     public getCurrentController(): string {
         let folderNameRegExp = new RegExp('.*\\' + path.sep + '(\w+)$');
-        let name = folderNameRegExp.exec(path.dirname(Files.uriToFilePath(this._document.uri)));
+        let documentPath = Files.uriToFilePath(this._document.uri);
+        if (!documentPath) return '';
+        let name = folderNameRegExp.exec(path.dirname(documentPath));
         if (name) return name[1]
         return '';
     }
@@ -279,7 +287,10 @@ export default class TagHelperDeclarationInfo {
 
     private getSpecificPart(text: string, regExp: RegExp, part: number = 1): string {
         if (!regExp.test(text)) return ''
-        return regExp.exec(text)[part];
+        let result = regExp.exec(text);
+
+        if(!result) return '';
+        return result[part];
     }
 
     // private createRouteSnippet(param: string): SnippetString {

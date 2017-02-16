@@ -7,7 +7,7 @@ import {
 	InitializeParams, InitializeResult, TextDocumentPositionParams,
 	CompletionItem, Hover, DidChangeTextDocumentParams,
 	PublishDiagnosticsParams, DidOpenTextDocumentParams,
-	DidSaveTextDocumentParams
+	DidSaveTextDocumentParams, ResponseError
 } from 'vscode-languageserver';
 import Uri from 'vscode-uri';
 
@@ -20,7 +20,7 @@ let documents: TextDocuments = new TextDocuments();
 documents.listen(connection);
 let workspaceRoot: string;
 connection.onInitialize((params): InitializeResult => {
-	workspaceRoot = params.rootPath;
+	if (params.rootPath) workspaceRoot = params.rootPath;
 	return {
 		capabilities: {
 			textDocumentSync: documents.syncKind,
@@ -51,9 +51,12 @@ connection.onDidChangeConfiguration((change) => {
 connection.onHover((textDocumentPosition: TextDocumentPositionParams): Hover => {
 	let document = documents.get(textDocumentPosition.textDocument.uri);
 	let hoverResult = ModelParser.getHoverResult(textDocumentPosition.position, document, workspaceRoot);
-	if (hoverResult) return hoverResult
+	if (hoverResult) return hoverResult;
 
-	return null;
+	let hover: Hover = {
+		contents: ''
+	};
+	return hover;
 });
 
 connection.onCompletion((textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
@@ -75,6 +78,9 @@ connection.onCompletionResolve((item: CompletionItem): CompletionItem => {
 
 documents.onDidChangeContent((change) => {
 	let errors = ModelParser.getModelErrors(change.document, workspaceRoot);
+
+	if (!errors) return;
+
 	let publishErrors: PublishDiagnosticsParams = {
 		diagnostics: errors,
 		uri: change.document.uri
