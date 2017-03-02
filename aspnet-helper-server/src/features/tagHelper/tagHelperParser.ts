@@ -13,6 +13,14 @@ export class TagHelperParser {
 
         let suggestions = new Array<CompletionItem>();
         let declarationInfo = new DeclarationInfo(position, document, workspaceRoot);
+
+        if (declarationInfo.userWantsAspNet()) {
+            let aspnetAttr = declarationInfo.getAspNetAttr();
+            let aspnetItems = declarationInfo.convertAspNetAttrToCompletionItems(aspnetAttr);
+            suggestions = suggestions.concat(aspnetItems);
+            return suggestions;
+        }
+
         if (declarationInfo.userWantsAreas()) {
             let areaNames = declarationInfo.getAreaNames();
             let areaItems = declarationInfo.convertAreaNamesToCompletionItems(areaNames);

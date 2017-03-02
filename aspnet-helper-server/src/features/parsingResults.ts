@@ -20,10 +20,12 @@ export class ActionResult {
     public routeParams: Property[];
 
     private parseActionResult(actionResult: string, type: TagHelperRegExp) {
-        let parts: RegExpExecArray
+        let parts: RegExpExecArray | null = null;
 
         if (type === TagHelperRegExp.Async) parts = GetParts(actionResult, this._asyncActionsRegExp);
         if (type === TagHelperRegExp.Sync) parts = GetParts(actionResult, this._syncActionsRegExp);
+
+        if (!parts) return;
 
         this.type = parts[1];
         this.name = parts[2];
@@ -60,7 +62,7 @@ export class PropertyPosition {
     public range: Range;
 }
 
-export function GetParts(text: string, regExp: RegExp): RegExpExecArray {
+export function GetParts(text: string, regExp: RegExp): RegExpExecArray | null {
     if (!regExp.test(text)) return null
     return regExp.exec(text);
 }

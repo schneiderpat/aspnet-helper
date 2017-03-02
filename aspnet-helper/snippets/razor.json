@@ -1,0 +1,22 @@
+{
+    "Create anchor tag with an area": {
+        "prefix": "area",
+        "body": [
+            "<a asp-area=\"$1\" asp-controller=\"$2\" asp-action=\"$3\">$4</a>$0"
+        ]
+    },
+
+    "Create anchor tag with a controller": {
+        "prefix": "controller",
+        "body": [
+            "<a asp-controller=\"$1\" asp-action=\"$2\">$3</a>$0"
+        ]
+    },
+
+    "Create anchor tag with an action only": {
+        "prefix": "action",
+        "body": [
+            "<a asp-action=\"$1\">$2</a>$0"
+        ]
+    }
+}

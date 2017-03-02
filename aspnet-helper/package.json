@@ -2,7 +2,7 @@
     "name": "aspnet-helper",
     "displayName": "ASP.NET Helper",
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
-    "version": "0.6.0",
+    "version": "0.6.2",
     "publisher": "schneiderpat",
     "keywords": [
         "C#",
@@ -24,10 +24,11 @@
     },
     "license": "MIT",
     "engines": {
-        "vscode": "^1.8.0"
+        "vscode": "^1.10.0"
     },
     "categories": [
-        "Other"
+        "Other", 
+        "Snippets"
     ],
     "activationEvents": [
         "*"
@@ -54,7 +55,13 @@
                     "description": "Traces the communication between VSCode and the languageServerExample service."
                 }
             }
-        }
+        },
+        "snippets": [
+            {
+                "language": "razor",
+                "path": "./snippets/razor.json"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "cd ../aspnet-helper-server && npm run compile && cd ../aspnet-helper && tsc -p ./",
@@ -63,8 +70,8 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.0.3",
-        "vscode": "^1.0.0",
+        "typescript": "^2.2.1",
+        "vscode": "^1.0.5",
         "mocha": "^2.3.3",
         "@types/node": "^6.0.40",
         "@types/mocha": "^2.2.32",
@@ -72,6 +79,6 @@
     },
     "dependencies": {
         "glob": "^7.1.1",
-        "vscode-languageclient": "^2.6.3"
+        "vscode-languageclient": "^3.1.0"
     }
 }

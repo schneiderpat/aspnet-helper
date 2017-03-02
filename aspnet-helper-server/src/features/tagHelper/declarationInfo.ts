@@ -35,29 +35,58 @@ export default class TagHelperDeclarationInfo {
 
     private getRootPath() {
         let currentDir = Files.uriToFilePath(this._document.uri);
+        if (!currentDir) return;
 
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
                 if (f.includes('project.json') || f.includes('csproj')) {
-                    this._rootDir = currentDir;
+                    if (currentDir) this._rootDir = currentDir;
                     return;
                 } 
             });
         }
     }
+
+    // ----------------------------------------------------------------------------------
+
+    public userWantsAspNet(): boolean {
+        let aspnetTest = /.*<a.*asp-$/;
+        if (aspnetTest.test(this._input)) return true
+        return false;
+    }
+
+    public getAspNetAttr(): string[] {
+        let items: string[] = [
+            "asp-area",
+            "asp-controller"
+        ];
+        return items;
+    }
+
+    public convertAspNetAttrToCompletionItems(attr: string[]): CompletionItem[] {
+        let items = new Array<CompletionItem>();
+        attr.forEach(a => {
+            let item = CompletionItem.create(a);
+            item.insertText = a.split('-')[1] + '=""';
+            item.kind = CompletionItemKind.Property;
+            items.push(item);
+        });
+        return items;
+    }
     
     // ----------------------------------------------------------------------------------
 
     public userWantsAreas(): boolean {
-        let areaTest = /.*asp-area="[a-zA-Z]*$/;
+        let areaTest = /.*asp-area="\w*$/;
         if (areaTest.test(this._input)) return true
-        return false
+        return false;
     }
 
     public getAreaNames(): string[] {
         let areaNames: string[] = [];
         let directories = this.getAreaDirectories();
+        if (!directories) return areaNames;
         directories.forEach((d) => { areaNames.push(d) });
         return areaNames;
     }
@@ -73,6 +102,8 @@ export default class TagHelperDeclarationInfo {
 
     private getAreaDirectories(): string[] {
         let areaDir = this._rootDir + path.sep + 'Areas' + path.sep;
+        if (!fs.existsSync(areaDir)) return [];
+        
         let directories = fs.readdirSync(areaDir).filter((file) => {
             return fs.statSync(path.join(areaDir, file)).isDirectory();
         });
@@ -82,7 +113,7 @@ export default class TagHelperDeclarationInfo {
     // ----------------------------------------------------------------------------------
 
     public userWantsControllers(): boolean {
-        let controllerTest = /.*asp-controller="[a-zA-Z]*$/
+        let controllerTest = /.*asp-controller="\w*$/
         if (controllerTest.test(this._input)) return true;
         return false;
     }
@@ -90,7 +121,6 @@ export default class TagHelperDeclarationInfo {
     public getControllerNames(): string[] {
         let area = this.getSpecificPart(this._input, this.currentAreaRegExp);
         let files = this.getControllerFiles(area);
-
         let controllerNames: string[] = [];
         files.forEach((f) => { 
             let controllerName = this.getSpecificPart(f, this.controllerNameRegExp);
@@ -118,14 +148,15 @@ export default class TagHelperDeclarationInfo {
         }
         let files = glob.sync(pattern);
         if (files) return files
+        return [];
     }
 
     // ----------------------------------------------------------------------------------
 
-    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<([a-zA-Z]*<?[a-zA-Z]+>?)>\s([a-zA-Z]+)\((.*)\)/g;
-    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)\((.*)\)/g;
+    private _asyncActionsRegExp = /\[HttpGet\]\r\n\s*public\sasync\sTask<(\w*<?\w+>?)>\s(\w+)\((.*)\)/g;
+    private _syncActionsRegExp = /\[HttpGet\]\r\n\s*public\s(\w*<?\w+>?)\s(\w+)\((.*)\)/g;
     public userWantsActions(): boolean {
-        let actionTest = /.*asp-action="[a-zA-Z]*$/
+        let actionTest = /.*asp-action="\w*$/
         if (actionTest.test(this._input)) return true
         return false
     }
@@ -146,7 +177,7 @@ export default class TagHelperDeclarationInfo {
         let pattern = this._rootDir + path.sep;
         let area = GetParts(this._input, this.currentAreaRegExp);
         let controller = GetParts(this._input, this.currentControllerRegExp);
-        let controllerName: string;
+        let controllerName: string = '';
         if (controller) controllerName = controller[1];
         if (!controller) controllerName = this.getCurrentController();
 
@@ -162,6 +193,8 @@ export default class TagHelperDeclarationInfo {
     private getActionMethods(): string[] {
         let pattern = this.getControllerPath();
         if (!pattern) return [];
+        if (!fs.existsSync(pattern)) return [];
+        
         let file = fs.readFileSync(pattern, 'utf8');
         let actions: string[] = [];
         
@@ -198,8 +231,10 @@ export default class TagHelperDeclarationInfo {
     }
 
     public getCurrentController(): string {
-        let folderNameRegExp = new RegExp('.*\\' + path.sep + '([a-zA-Z]+)$');
-        let name = folderNameRegExp.exec(path.dirname(Files.uriToFilePath(this._document.uri)));
+        let folderNameRegExp = new RegExp('.*\\' + path.sep + '(\w+)$');
+        let documentPath = Files.uriToFilePath(this._document.uri);
+        if (!documentPath) return '';
+        let name = folderNameRegExp.exec(path.dirname(documentPath));
         if (name) return name[1]
         return '';
     }
@@ -207,7 +242,7 @@ export default class TagHelperDeclarationInfo {
     // ----------------------------------------------------------------------------------
 
     public userWantsRouteParams(): boolean {
-        let routeParamsTest = /.*asp-route-[a-zA-Z]*$/;
+        let routeParamsTest = /.*asp-route-\w*$/;
         if (routeParamsTest.test(this._input)) return true
         return false
     }
@@ -237,22 +272,25 @@ export default class TagHelperDeclarationInfo {
     // }
 
     public getCurrentAction(): string {
-        let actionTest = /asp-action="([a-zA-Z]+)"/;
+        let actionTest = /asp-action="(\w+)"/;
         let action = GetParts(this._input, actionTest);
         if (!action) return '';
         return action[1];
     }
 
     // Get specfic part of a text
-    private currentAreaRegExp: RegExp = /.*asp-area="([a-zA-Z]+)".?/;
-    private currentControllerRegExp: RegExp = /.*asp-controller="([a-zA-Z]+)".?/;
-    private currentActionRegExp: RegExp = /.*asp-action="([a-zA-Z]+)".?/;
-    private controllerNameRegExp = /([a-zA-Z]+)Controller\.cs/;
-    private actionNameRegExp = /.?\s([a-zA-Z]+)\(.*\)/;
+    private currentAreaRegExp: RegExp = /.*asp-area="(\w+)".?/;
+    private currentControllerRegExp: RegExp = /.*asp-controller="(\w+)".?/;
+    private currentActionRegExp: RegExp = /.*asp-action="(\w+)".?/;
+    private controllerNameRegExp = /(\w+)Controller\.cs/;
+    private actionNameRegExp = /.?\s(\w+)\(.*\)/;
 
     private getSpecificPart(text: string, regExp: RegExp, part: number = 1): string {
         if (!regExp.test(text)) return ''
-        return regExp.exec(text)[part];
+        let result = regExp.exec(text);
+
+        if(!result) return '';
+        return result[part];
     }
 
     // private createRouteSnippet(param: string): SnippetString {

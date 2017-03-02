@@ -50,12 +50,12 @@ export default class ModelDeclarationInfo {
 
     private getRootPath() {
         let currentDir = Files.uriToFilePath(this._document.uri);
-
+        if (!currentDir) return
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
                 if (f.includes('project.json') || f.includes('csproj')) {
-                    this._rootDir = currentDir;
+                    if (currentDir) this._rootDir = currentDir;
                     return;
                 } 
             });
@@ -69,7 +69,7 @@ export default class ModelDeclarationInfo {
     }
 
     public userWantsSingleProperty(): boolean {
-        let userRegExp = /.*@Model\.[a-zA-Z]*$/;
+        let userRegExp = /.*@Model\.\w*$/;
         if (userRegExp.test(this.input)) return true;
         return false
     }
@@ -91,8 +91,9 @@ export default class ModelDeclarationInfo {
 
     private getViewImportsFiles(): string[] {
         let currentDir = Files.uriToFilePath(this._document.uri);
+        if (!currentDir) return [];        
+        
         let files: string[] = [];
-
         while (currentDir !== this._rootDir) {
             currentDir = path.dirname(currentDir);
             fs.readdirSync(currentDir).forEach(f => {
@@ -109,10 +110,12 @@ export default class ModelDeclarationInfo {
         files.forEach(f => {
             let text = fs.readFileSync(f, 'utf8');
             let results = text.match(namespaceRegExp);
-            results.forEach(r => { 
-                let namespace = GetParts(r, new RegExp(namespaceRegExp.source));
-                if (namespace) namespaces.push(namespace[1]);
-            })
+            if (results) {
+                results.forEach(r => { 
+                    let namespace = GetParts(r, new RegExp(namespaceRegExp.source));
+                    if (namespace) namespaces.push(namespace[1]);
+                })
+            }
         });
         return namespaces;
     }
@@ -120,10 +123,10 @@ export default class ModelDeclarationInfo {
     public getProperties(model: string, namespaces: string[]): Property[] {
         let matchingFiles: string[] = this.getMatchingFiles(model, namespaces);
         
-        if (!matchingFiles) return new Array<Property>()
+        if (matchingFiles.length == 0) return new Array<Property>()
 
         let text = fs.readFileSync(matchingFiles[0], 'utf8');
-        let propRegExp = /public\s([a-zA-Z]*<?[a-zA-Z]+>?)\s([a-zA-Z]+)/g;
+        let propRegExp = /public\s(\w*<?\w+>?)\s(\w+)/g;
         let fullProps = text.match(propRegExp);
         
         if (!fullProps) return new Array<Property>();
@@ -132,6 +135,7 @@ export default class ModelDeclarationInfo {
         let items = new Array<Property>();
         fullProps.forEach(p => {
             let results = GetParts(p, new RegExp(propRegExp.source));
+            if (!results) return;
             let item = new Property();
             item.type = results[1];
             item.name = results[2];
@@ -190,12 +194,12 @@ export default class ModelDeclarationInfo {
 
     public getAllUsedPropertiesInFile(): PropertyPosition[] {
         let items = new Array<PropertyPosition>();
-        let propertyRegExp = /.*@Model\.([a-zA-Z]*)/g;
+        let propertyRegExp = /.*@Model\.(\w*)/g;
         let lines = this._document.getText().split(/\r?\n/g);
         if (!lines) return [];
 
         lines.forEach((line, i) => {
-            let result: RegExpExecArray;
+            let result: RegExpExecArray | null;
             while ( (result = propertyRegExp.exec(line)) ) {
                 let item = new PropertyPosition();
                 item.property = result[1];
