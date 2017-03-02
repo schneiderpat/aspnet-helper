@@ -1,3 +1,7 @@
+## 0.6.2
+
+* Update to latest packages
+
 ## 0.6.0
 
 * View now shows errors if your model changed or you misspelled a property
