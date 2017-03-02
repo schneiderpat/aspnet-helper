@@ -123,7 +123,7 @@ export default class ModelDeclarationInfo {
     public getProperties(model: string, namespaces: string[]): Property[] {
         let matchingFiles: string[] = this.getMatchingFiles(model, namespaces);
         
-        if (!matchingFiles) return new Array<Property>()
+        if (matchingFiles.length == 0) return new Array<Property>()
 
         let text = fs.readFileSync(matchingFiles[0], 'utf8');
         let propRegExp = /public\s(\w*<?\w+>?)\s(\w+)/g;
