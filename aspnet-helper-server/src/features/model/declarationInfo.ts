@@ -41,11 +41,11 @@ export default class ModelDeclarationInfo {
     }
 
     public getWordAtPosition() {
-        let left = this.input.slice(0, this._position.character + 1).search(/\S+$/);
-        let right = this.input.slice(this._position.character).search(/\s/);
         let line = this.getCurrentLine();
+        let left = line.slice(0, this._position.character + 1).search(/\./);
+        let right = line.slice(left + 1).search(/\W/);
         if (right < 0) return line.slice(left);
-        return line.slice(left, right + this._position.character);
+        return line.slice(left +1 , right + this._position.character - 2);
     }
 
     private getRootPath() {
