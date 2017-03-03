@@ -50,8 +50,8 @@ export class ModelParser {
 
         if (!properties) return;
         let word = declarationInfo.getWordAtPosition();
-        properties = properties.filter(p => { return word.split('.')[1] === p.name })
-        if (!properties) return;
+        properties = properties.filter(p => { return word === p.name })
+        if (properties.length == 0) return;
         
         let hover = declarationInfo.convertPropertiesToHoverResult(properties[0]);
         return hover;
