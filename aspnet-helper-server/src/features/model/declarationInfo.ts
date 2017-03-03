@@ -106,7 +106,7 @@ export default class ModelDeclarationInfo {
 
     private getNamespacesFromFiles(files: string[]): string[] {
         let namespaces: string[] = [];
-        let namespaceRegExp = /@using\s(.*)/;
+        let namespaceRegExp = /@using\s(.*)/g;
         files.forEach(f => {
             let text = fs.readFileSync(f, 'utf8');
             let results = text.match(namespaceRegExp);
