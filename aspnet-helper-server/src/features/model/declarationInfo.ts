@@ -126,7 +126,7 @@ export default class ModelDeclarationInfo {
         if (matchingFiles.length == 0) return new Array<Property>()
 
         let text = fs.readFileSync(matchingFiles[0], 'utf8');
-        let propRegExp = /public\s(\w*<?\w+>?)\s(\w+)/g;
+        let propRegExp = /public\s(?:virtual\s)?(\w*<?\w+>?\??)\s(\w+)/g;
         let fullProps = text.match(propRegExp);
         
         if (!fullProps) return new Array<Property>();
