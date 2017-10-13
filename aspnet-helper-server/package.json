@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@types/glob": "^5.0.30",
 		"@types/node": "^7.0.0",
-		"typescript": "^2.1.5"
+		"typescript": "^2.5.3"
 	},
 	"scripts": {
 		"compile": "installServerIntoExtension ../aspnet-helper ./package.json ./tsconfig.json && tsc -p .",
