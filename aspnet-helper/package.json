@@ -2,7 +2,7 @@
     "name": "aspnet-helper",
     "displayName": "ASP.NET Helper",
     "description": "\"Little helper to develop faster ASP.NET MVC apps\"",
-    "version": "0.6.3",
+    "version": "0.6.4",
     "publisher": "schneiderpat",
     "keywords": [
         "C#",
